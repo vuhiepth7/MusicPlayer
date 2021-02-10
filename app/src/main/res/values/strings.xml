@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MusicPlayer</string>
+    <string name="storage_permission_required">Requires permission to display music</string>
+</resources>
