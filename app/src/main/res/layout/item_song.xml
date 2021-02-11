@@ -11,17 +11,15 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/thumbnail"
             imageUrl="@{song.thumbnail}"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_width="@dimen/thumbnail_size"
+            android:layout_height="@dimen/thumbnail_size"
+            android:layout_margin="@dimen/keyline_2"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintStart_toStartOf="parent"
@@ -30,34 +28,28 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/title"
+            style="@style/MusicPlayer.TextAppearance.Title.Small"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
             android:text="@{song.title}"
-            android:textAppearance="?textAppearanceSubtitle1"
-            android:textColor="@color/material_on_surface_emphasis_high_type"
             app:layout_constraintBottom_toTopOf="@id/artist"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/thumbnail"
             app:layout_constraintTop_toTopOf="@+id/thumbnail"
             app:layout_constraintVertical_chainStyle="packed"
-            tools:text="Song name" />
+            tools:text="@string/sample_title" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/artist"
+            style="@style/MusicPlayer.TextAppearance.Artist.Small"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
             android:text="@{song.artist}"
-            android:textAppearance="?textAppearanceBody2"
-            android:textColor="@color/material_on_surface_emphasis_medium"
             app:layout_constraintBottom_toBottomOf="@+id/thumbnail"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/thumbnail"
             app:layout_constraintTop_toBottomOf="@+id/title"
-            tools:text="Artist" />
+            tools:text="@string/sample_artist" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

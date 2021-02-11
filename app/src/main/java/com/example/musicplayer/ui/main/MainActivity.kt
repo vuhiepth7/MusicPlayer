@@ -1,4 +1,4 @@
-package com.example.musicplayer.ui
+package com.example.musicplayer.ui.main
 
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -19,6 +19,7 @@ import com.example.musicplayer.data.local.SongDbHelper
 import com.example.musicplayer.data.model.Song
 import com.example.musicplayer.data.repo.SongRepository
 import com.example.musicplayer.databinding.ActivityMainBinding
+import com.example.musicplayer.ui.player.PlayerActivity
 import com.example.musicplayer.utils.AppPermission
 import com.example.musicplayer.utils.PermissionStatus
 import com.example.musicplayer.utils.Status
@@ -28,7 +29,13 @@ class MainActivity : AppCompatActivity(), SongAdapter.SongListener {
     private lateinit var binding: ActivityMainBinding
     private val songDbHelper by lazy { SongDbHelper(this) }
     private val contentResolverHelper by lazy { ContentResolverHelper(this) }
-    private val viewModel by lazy { ViewModelProvider(this, MainViewModelFactory(SongRepository(songDbHelper, contentResolverHelper))).get(MainViewModel::class.java) }
+    private val viewModel by lazy {
+        ViewModelProvider(
+            this,
+            MainViewModelFactory(SongRepository(songDbHelper, contentResolverHelper))
+        ).get(MainViewModel::class.java)
+    }
+    private lateinit var songs: List<Song>
     private lateinit var adapter: SongAdapter
     private val storagePermission by lazy { AppPermission.READ_EXTERNAL_STORAGE }
 
@@ -41,7 +48,11 @@ class MainActivity : AppCompatActivity(), SongAdapter.SongListener {
 
     override fun onStart() {
         super.onStart()
-        if (ContextCompat.checkSelfPermission(this, storagePermission.permission) == PackageManager.PERMISSION_GRANTED) viewModel.loadSongsFromContentResolver()
+        if (ContextCompat.checkSelfPermission(
+                this,
+                storagePermission.permission
+            ) == PackageManager.PERMISSION_GRANTED
+        ) viewModel.loadSongsFromContentResolver()
     }
 
     private fun initSongList() {
@@ -57,9 +68,11 @@ class MainActivity : AppCompatActivity(), SongAdapter.SongListener {
                 when (it.status) {
                     Status.SUCCESS -> {
                         adapter.submitList(it.data)
+                        songs = it.data ?: emptyList()
                         askPermissionIfNoData(it.data)
                     }
-                    Status.LOADING -> {}
+                    Status.LOADING -> {
+                    }
                     Status.ERROR -> it.error?.printStackTrace()
                 }
             }
@@ -70,7 +83,9 @@ class MainActivity : AppCompatActivity(), SongAdapter.SongListener {
         if (data.isNullOrEmpty()) {
             requestPermission(storagePermission)
         } else {
-            if (!isPermissionGranted(storagePermission)) showWantToGivePermissionDialog(storagePermission)
+            if (!isPermissionGranted(storagePermission)) showWantToGivePermissionDialog(
+                storagePermission
+            )
         }
     }
 
@@ -159,11 +174,17 @@ class MainActivity : AppCompatActivity(), SongAdapter.SongListener {
     }
 
     private fun isPermissionGranted(appPermission: AppPermission): Boolean {
-        return ContextCompat.checkSelfPermission(this, appPermission.permission) == PackageManager.PERMISSION_GRANTED
+        return ContextCompat.checkSelfPermission(
+            this,
+            appPermission.permission
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
-    override fun onSongClicked(song: Song) {
-        Toast.makeText(this, song.title, Toast.LENGTH_SHORT).show()
+    override fun onSongClicked(position: Int) {
+        PlayerActivity.setSongs(songs)
+        PlayerActivity.setSelectedSongs(songs[position])
+        val intent = Intent(this, PlayerActivity::class.java)
+        startActivity(intent)
     }
 }
 

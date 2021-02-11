@@ -5,8 +5,8 @@ import androidx.lifecycle.Observer
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.musicplayer.data.model.Song
 import com.example.musicplayer.data.repo.Repository
+import com.example.musicplayer.ui.main.MainViewModel
 import com.example.musicplayer.utils.Result
-import com.example.musicplayer.utils.mock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.After
@@ -15,7 +15,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
 

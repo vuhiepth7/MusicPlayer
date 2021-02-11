@@ -1,4 +1,4 @@
-package com.example.musicplayer.ui
+package com.example.musicplayer.ui.main
 
 import androidx.lifecycle.*
 import com.example.musicplayer.data.model.Song
@@ -7,7 +7,7 @@ import com.example.musicplayer.data.repo.SongRepository
 import com.example.musicplayer.utils.Result
 import kotlinx.coroutines.launch
 
-class MainViewModel(private val repository: Repository, ) : ViewModel() {
+class MainViewModel(private val repository: Repository) : ViewModel() {
 
     private val _songs = MutableLiveData<Result<List<Song>>>()
     val songs: LiveData<Result<List<Song>>>

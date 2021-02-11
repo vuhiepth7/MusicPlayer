@@ -1,0 +1,30 @@
+<resources>
+
+    <style name="MusicPlayer.TextAppearance.Title.Large" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Headline6</item>
+        <item name="android:textColor">@color/material_on_surface_emphasis_high_type</item>
+        <item name="android:layout_marginStart">@dimen/keyline_3</item>
+        <item name="android:layout_marginEnd">@dimen/keyline_3</item>
+    </style>
+
+    <style name="MusicPlayer.TextAppearance.Artist.Large" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Subtitle1</item>
+        <item name="android:textColor">@color/material_on_surface_emphasis_medium</item>
+        <item name="android:layout_marginStart">@dimen/keyline_3</item>
+        <item name="android:layout_marginEnd">@dimen/keyline_3</item>
+    </style>
+
+    <style name="MusicPlayer.TextAppearance.Title.Small" parent="MusicPlayer.TextAppearance.Title.Large">
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Subtitle1</item>
+    </style>
+
+    <style name="MusicPlayer.TextAppearance.Artist.Small" parent="MusicPlayer.TextAppearance.Artist.Large">
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Body2</item>
+    </style>
+
+    <style name="MusicPlayer.TextAppearance.Timestamp" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Body2</item>
+        <item name="android:textColor">@color/material_on_surface_emphasis_medium</item>
+    </style>
+
+</resources>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.player.PlayerActivity">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/chevron_down"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/keyline_3"
+            android:layout_marginTop="@dimen/keyline_3"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_chevron_down" />
+
+        <androidx.viewpager.widget.ViewPager
+            android:id="@+id/view_pager"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/keyline_3"
+            android:layout_marginBottom="@dimen/keyline_6"
+            app:layout_constraintBottom_toTopOf="@+id/favorite"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chevron_down" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/title_tv"
+            style="@style/MusicPlayer.TextAppearance.Title.Large"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/artist_tv"
+            app:layout_constraintEnd_toStartOf="@+id/favorite"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="@string/sample_title" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/artist_tv"
+            style="@style/MusicPlayer.TextAppearance.Artist.Large"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/keyline_3"
+            app:layout_constraintBottom_toTopOf="@+id/seek_bar"
+            app:layout_constraintEnd_toStartOf="@+id/favorite"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="@string/sample_artist" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/favorite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/keyline_3"
+            android:layout_marginBottom="@dimen/keyline_3"
+            app:layout_constraintBottom_toTopOf="@+id/seek_bar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/ic_favorite_outline" />
+
+        <androidx.appcompat.widget.AppCompatSeekBar
+            android:id="@+id/seek_bar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/keyline_3"
+            android:layout_marginEnd="@dimen/keyline_3"
+            android:layout_marginBottom="@dimen/keyline_2"
+            app:layout_constraintBottom_toTopOf="@+id/current_timestamp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/current_timestamp"
+            style="@style/MusicPlayer.TextAppearance.Timestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/keyline_3"
+            android:layout_marginBottom="@dimen/keyline_3"
+            app:layout_constraintBottom_toTopOf="@+id/media_controls_layout"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="@string/sample_timestamp" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/end_timestamp"
+            style="@style/MusicPlayer.TextAppearance.Timestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/keyline_3"
+            android:layout_marginBottom="@dimen/keyline_3"
+            app:layout_constraintBottom_toTopOf="@+id/media_controls_layout"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="@string/sample_timestamp" />
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/media_controls_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/keyline_3"
+            android:layout_marginBottom="@dimen/keyline_5"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/shuffle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="@dimen/keyline_3"
+                app:srcCompat="@drawable/ic_shuffle" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/skip_previous"
+                android:layout_width="@dimen/skip_size"
+                android:layout_height="@dimen/skip_size"
+                android:padding="@dimen/keyline_3"
+                app:srcCompat="@drawable/ic_skip_previous" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/play_pause"
+                android:layout_width="@dimen/play_pause_size"
+                android:layout_height="@dimen/play_pause_size"
+                android:padding="@dimen/keyline_3"
+                app:srcCompat="@drawable/ic_play" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/skip_next"
+                android:layout_width="@dimen/skip_size"
+                android:layout_height="@dimen/skip_size"
+                android:padding="@dimen/keyline_3"
+                app:srcCompat="@drawable/ic_skip_next" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/repeat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="@dimen/keyline_3"
+                app:srcCompat="@drawable/ic_repeat" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

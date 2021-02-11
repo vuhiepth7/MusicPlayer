@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">MusicPlayer</string>
+
     <string name="storage_permission_required">Requires permission to display music</string>
+
+    <string name="sample_title">Blinding Lights</string>
+    <string name="sample_artist">The Weeknd</string>
+    <string name="sample_timestamp">0:00</string>
 </resources>

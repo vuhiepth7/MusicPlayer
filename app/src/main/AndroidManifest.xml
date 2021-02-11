@@ -12,7 +12,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MusicPlayer">
-        <activity android:name=".ui.MainActivity">
+        <activity
+            android:name=".ui.player.PlayerActivity"
+            android:theme="@style/Theme.MusicPlayer.NoActionBar" />
+        <activity android:name=".ui.main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

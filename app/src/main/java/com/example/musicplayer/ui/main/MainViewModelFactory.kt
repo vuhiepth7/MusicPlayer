@@ -1,4 +1,4 @@
-package com.example.musicplayer.ui
+package com.example.musicplayer.ui.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
