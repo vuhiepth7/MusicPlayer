@@ -5,23 +5,27 @@ import com.example.musicplayer.data.model.Song
 
 class PlayerViewModel : ViewModel() {
 
-    private val _songList = MutableLiveData<List<Song>>()
-    val songList: LiveData<List<Song>>
-        get() = _songList
+    private val _currentSongIndex = MutableLiveData<Int>()
+    val currentSongIndex: LiveData<Int>
+        get() = _currentSongIndex
 
-    private val _currentSong = MutableLiveData<Song>()
-    val currentSong: LiveData<Song>
-        get() = _currentSong
-
-    val currentSongIndex: LiveData<Int> = _currentSong.map {
-        _songList.value?.indexOf(it) ?: 0
+    fun setCurrentSongIndex(index: Int) {
+        _currentSongIndex.value = index
     }
 
-    fun setSongList(songs: List<Song>) {
-        _songList.value = songs
+    fun skipNext(): Boolean {
+        val currentIndex = _currentSongIndex.value!!
+        return if (currentIndex < PlayerActivity.songsList.size - 1) {
+            _currentSongIndex.value = currentSongIndex.value?.plus(1)
+            true
+        } else false
     }
 
-    fun setCurrentSong(song: Song?) {
-        _currentSong.value = song
+    fun skipPrevious(): Boolean {
+        val currentIndex = _currentSongIndex.value!!
+        return if (currentIndex > 0) {
+            _currentSongIndex.value = currentSongIndex.value?.minus(1)
+            true
+        } else false
     }
 }

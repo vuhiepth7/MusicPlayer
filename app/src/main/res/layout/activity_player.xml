@@ -126,7 +126,7 @@
                 android:layout_width="@dimen/play_pause_size"
                 android:layout_height="@dimen/play_pause_size"
                 android:padding="@dimen/keyline_3"
-                app:srcCompat="@drawable/ic_play" />
+                app:srcCompat="@drawable/ic_pause" />
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/skip_next"

@@ -1,18 +1,24 @@
 package com.example.musicplayer.ui.player
 
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SeekBar
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
-import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.musicplayer.R
 import com.example.musicplayer.data.model.Song
 import com.example.musicplayer.databinding.ActivityPlayerBinding
@@ -20,52 +26,124 @@ import com.example.musicplayer.databinding.ItemSongImageBinding
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class PlayerActivity : FragmentActivity() {
+class PlayerActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback {
 
+    private lateinit var playerService: MediaPlayerService
+    private var isBound = false
     private lateinit var binding: ActivityPlayerBinding
     private val viewModel by lazy { ViewModelProvider(this).get(PlayerViewModel::class.java) }
+    private val localBroadcastManager by lazy { LocalBroadcastManager.getInstance(this@PlayerActivity) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_player)
-        setSongListAndCurrentSong()
+        viewModel.setCurrentSongIndex(currentSongIndex)
+        bindPlayerService()
         setUpClickListeners()
         initViewPager()
         updateUi()
     }
 
-    private fun setSongListAndCurrentSong() {
-        viewModel.setSongList(songsList)
-        viewModel.setCurrentSong(selectedSong)
+    private fun bindPlayerService() {
+        val serviceConnection = object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                val binder = service as MediaPlayerService.LocalBinder
+                playerService = binder.getService()
+                playerService.registerCallback(this@PlayerActivity)
+                isBound = true
+            }
+
+            override fun onServiceDisconnected(name: ComponentName?) {
+                isBound = false
+            }
+        }
+        if (!isBound) {
+            val intent = Intent(this, MediaPlayerService::class.java)
+            bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+        }
     }
 
     private fun setUpClickListeners() {
         binding.chevronDown.setOnClickListener { finish() }
-    }
-
-    private fun initViewPager() {
-        binding.viewPager.adapter = PlayerActivityAdapter(this)
-        binding.viewPager.currentItem = songsList.indexOf(selectedSong)
-        binding.viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-            override fun onPageScrolled(
-                position: Int, positionOffset: Float, positionOffsetPixels: Int
-            ) {
-                viewModel.setCurrentSong(songsList[position])
+        binding.playPause.setOnClickListener {
+            val intent = if (playerService.isPlaying()) {
+                binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_play, theme))
+                Intent(MediaPlayerService.INTENT_ACTION_PAUSE)
+            } else {
+                binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_pause, theme))
+                Intent(MediaPlayerService.INTENT_ACTION_PLAY)
             }
+            localBroadcastManager.sendBroadcast(intent)
+        }
+        binding.skipNext.setOnClickListener {
+            if (viewModel.skipNext()) {
+                localBroadcastManager.sendBroadcast(Intent(MediaPlayerService.INTENT_ACTION_SKIP_NEXT))
+            }
+        }
 
-            override fun onPageSelected(position: Int) {}
+        binding.skipPrevious.setOnClickListener {
+            if (viewModel.skipPrevious()) {
+                localBroadcastManager.sendBroadcast(Intent(MediaPlayerService.INTENT_ACTION_SKIP_PREVIOUS))
+            }
+        }
 
-            override fun onPageScrollStateChanged(state: Int) {}
+        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                binding.currentTimestamp.text = getTimestamp(progress * 1000L)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                val intent = Intent(MediaPlayerService.INTENT_ACTION_SEEK)
+                intent.putExtra("seek_to", seekBar?.progress)
+                localBroadcastManager.sendBroadcast(intent)
+            }
         })
     }
 
+    private fun initViewPager() {
+        binding.viewPager.apply {
+            adapter = PlayerActivityAdapter(this@PlayerActivity)
+            currentItem = currentSongIndex
+            addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+                override fun onPageSelected(position: Int) {
+                    if (currentSongIndex == position) return
+                    val intent = when {
+                        currentSongIndex < position -> {
+                            viewModel.skipNext()
+                            Intent(MediaPlayerService.INTENT_ACTION_SKIP_NEXT)
+                        }
+                        else -> {
+                            viewModel.skipPrevious()
+                            Intent(MediaPlayerService.INTENT_ACTION_SKIP_PREVIOUS)
+                        }
+                    }
+                    localBroadcastManager.sendBroadcast(intent)
+                }
+
+                override fun onPageScrollStateChanged(state: Int) {}
+                override fun onPageScrolled(
+                    position: Int,
+                    positionOffset: Float,
+                    positionOffsetPixels: Int
+                ) {
+                }
+            })
+        }
+    }
+
     private fun updateUi() {
-        viewModel.currentSong.observe(this) {
-            it?.let { song ->
+        viewModel.currentSongIndex.observe(this) {
+            it?.let { index ->
+                currentSongIndex = index
+                val currentSong = songsList[index]
                 binding.apply {
-                    titleTv.text = song.title
-                    artistTv.text = song.artist
-                    endTimestamp.text = getTimestamp(song.duration)
+                    titleTv.text = currentSong.title
+                    artistTv.text = currentSong.artist
+                    currentTimestamp.text = getTimestamp(0L)
+                    endTimestamp.text = getTimestamp(currentSong.duration)
+                    seekBar.progress = 0
+                    seekBar.max = TimeUnit.MILLISECONDS.toSeconds(currentSong.duration).toInt()
+                    viewPager.currentItem = index
                 }
             }
         }
@@ -100,14 +178,20 @@ class PlayerActivity : FragmentActivity() {
 
     companion object {
         var songsList: List<Song> = emptyList()
-        var selectedSong: Song? = null
+        var currentSongIndex = 0
 
         fun setSongs(songs: List<Song>) {
             songsList = songs
         }
 
-        fun setSelectedSongs(song: Song) {
-            selectedSong = song
+        fun setSongIndex(index: Int) {
+            currentSongIndex = index
         }
+    }
+
+    override fun onCompletion() {
+        if (viewModel.skipNext()) {
+            localBroadcastManager.sendBroadcast(Intent(MediaPlayerService.INTENT_ACTION_SKIP_NEXT))
+        } else localBroadcastManager.sendBroadcast(Intent(MediaPlayerService.INTENT_ACTION_STOP))
     }
 }
