@@ -6,5 +6,6 @@ interface SongDataSource {
 
     fun addAllSongs(songs: List<Song>)
     fun getAllSongs(): List<Song>
+    fun updateSong(song: Song)
     fun deleteAll()
 }

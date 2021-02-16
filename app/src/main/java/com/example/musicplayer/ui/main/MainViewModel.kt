@@ -27,4 +27,10 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
         }
     }
 
+    fun updateSong(song: Song) {
+        viewModelScope.launch {
+            repository.updateSong(song)
+        }
+    }
+
 }

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.Handler
 import android.os.IBinder
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,9 +21,14 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.example.musicplayer.R
+import com.example.musicplayer.data.local.ContentResolverHelper
+import com.example.musicplayer.data.local.SongDbHelper
 import com.example.musicplayer.data.model.Song
+import com.example.musicplayer.data.repo.SongRepository
 import com.example.musicplayer.databinding.ActivityPlayerBinding
 import com.example.musicplayer.databinding.ItemSongImageBinding
+import com.example.musicplayer.ui.main.MainViewModel
+import com.example.musicplayer.ui.main.MainViewModelFactory
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -31,7 +37,14 @@ class PlayerActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallba
     private lateinit var playerService: MediaPlayerService
     private var isBound = false
     private lateinit var binding: ActivityPlayerBinding
-    private val viewModel by lazy { ViewModelProvider(this).get(PlayerViewModel::class.java) }
+    private val songDbHelper by lazy { SongDbHelper(this) }
+    private val contentResolverHelper by lazy { ContentResolverHelper(this) }
+    private val viewModel by lazy {
+        ViewModelProvider(
+            this,
+            MainViewModelFactory(SongRepository(songDbHelper, contentResolverHelper))
+        ).get(PlayerViewModel::class.java)
+    }
     private val localBroadcastManager by lazy { LocalBroadcastManager.getInstance(this@PlayerActivity) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,40 +77,49 @@ class PlayerActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallba
     }
 
     private fun setUpClickListeners() {
-        binding.chevronDown.setOnClickListener { finish() }
-        binding.playPause.setOnClickListener {
-            val intent = if (playerService.isPlaying()) {
-                binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_play, theme))
-                Intent(MediaPlayerService.INTENT_ACTION_PAUSE)
-            } else {
-                binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_pause, theme))
-                Intent(MediaPlayerService.INTENT_ACTION_PLAY)
-            }
-            localBroadcastManager.sendBroadcast(intent)
-        }
-        binding.skipNext.setOnClickListener {
-            if (viewModel.skipNext()) {
-                localBroadcastManager.sendBroadcast(Intent(MediaPlayerService.INTENT_ACTION_SKIP_NEXT))
-            }
-        }
-
-        binding.skipPrevious.setOnClickListener {
-            if (viewModel.skipPrevious()) {
-                localBroadcastManager.sendBroadcast(Intent(MediaPlayerService.INTENT_ACTION_SKIP_PREVIOUS))
-            }
-        }
-
-        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                binding.currentTimestamp.text = getTimestamp(progress * 1000L)
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                val intent = Intent(MediaPlayerService.INTENT_ACTION_SEEK)
-                intent.putExtra("seek_to", seekBar?.progress)
+        binding.apply {
+            chevronDown.setOnClickListener { finish() }
+            repeat.setOnCheckedChangeListener { button, _ ->
+                val intent = Intent(MediaPlayerService.INTENT_ACTION_SET_LOOPING)
+                intent.putExtra("looping", button.isChecked)
                 localBroadcastManager.sendBroadcast(intent)
             }
-        })
+            favorite.setOnCheckedChangeListener { button, _ ->
+                val favorite = if (button.isChecked) 1 else 0
+                viewModel.updateSong(songsList[currentSongIndex].copy(favorite = favorite))
+            }
+            playPause.setOnClickListener {
+                val intent = if (playerService.isPlaying()) {
+                    binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_play, theme))
+                    Intent(MediaPlayerService.INTENT_ACTION_PAUSE)
+                } else {
+                    binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_pause, theme))
+                    Intent(MediaPlayerService.INTENT_ACTION_PLAY)
+                }
+                localBroadcastManager.sendBroadcast(intent)
+            }
+            skipNext.setOnClickListener {
+                if (viewModel.skipNext()) {
+                    localBroadcastManager.sendBroadcast(Intent(MediaPlayerService.INTENT_ACTION_SKIP_NEXT))
+                }
+            }
+            skipPrevious.setOnClickListener {
+                if (viewModel.skipPrevious()) {
+                    localBroadcastManager.sendBroadcast(Intent(MediaPlayerService.INTENT_ACTION_SKIP_PREVIOUS))
+                }
+            }
+            seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    binding.currentTimestamp.text = getTimestamp(progress.toLong())
+                }
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                    val intent = Intent(MediaPlayerService.INTENT_ACTION_SEEK)
+                    intent.putExtra("seek_to", seekBar?.progress)
+                    localBroadcastManager.sendBroadcast(intent)
+                }
+            })
+        }
     }
 
     private fun initViewPager() {
@@ -139,10 +161,12 @@ class PlayerActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallba
                 binding.apply {
                     titleTv.text = currentSong.title
                     artistTv.text = currentSong.artist
+                    favorite.isChecked = currentSong.favorite == 1
+                    repeat.isChecked = false
                     currentTimestamp.text = getTimestamp(0L)
                     endTimestamp.text = getTimestamp(currentSong.duration)
                     seekBar.progress = 0
-                    seekBar.max = TimeUnit.MILLISECONDS.toSeconds(currentSong.duration).toInt()
+                    seekBar.max = currentSong.duration.toInt()
                     viewPager.currentItem = index
                 }
             }
@@ -192,6 +216,13 @@ class PlayerActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallba
     override fun onCompletion() {
         if (viewModel.skipNext()) {
             localBroadcastManager.sendBroadcast(Intent(MediaPlayerService.INTENT_ACTION_SKIP_NEXT))
-        } else localBroadcastManager.sendBroadcast(Intent(MediaPlayerService.INTENT_ACTION_STOP))
+        } else {
+            viewModel.restart()
+            localBroadcastManager.sendBroadcast(Intent(MediaPlayerService.INTENT_ACTION_RESTART))
+        }
+    }
+
+    override fun onPrepared() {
+        binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_pause, theme))
     }
 }

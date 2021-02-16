@@ -16,8 +16,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.musicplayer.data.model.Song
 import java.lang.Exception
 
-class MediaPlayerService : Service(), MediaPlayer.OnCompletionListener,
-    MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
+class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
     AudioManager.OnAudioFocusChangeListener {
 
     private lateinit var mediaPlayer: MediaPlayer
@@ -38,8 +37,11 @@ class MediaPlayerService : Service(), MediaPlayer.OnCompletionListener,
             addAction(INTENT_ACTION_SKIP_PREVIOUS)
             addAction(INTENT_ACTION_STOP)
             addAction(INTENT_ACTION_SEEK)
+            addAction(INTENT_ACTION_RESTART)
+            addAction(INTENT_ACTION_SET_LOOPING)
         }
-        LocalBroadcastManager.getInstance(applicationContext).registerReceiver(mediaBroadcastReceiver, intentFilter)
+        LocalBroadcastManager.getInstance(applicationContext)
+            .registerReceiver(mediaBroadcastReceiver, intentFilter)
         return iBinder
     }
 
@@ -50,9 +52,12 @@ class MediaPlayerService : Service(), MediaPlayer.OnCompletionListener,
     private fun initMediaPlayer() {
         mediaPlayer = MediaPlayer()
         mediaPlayer.apply {
-            setOnCompletionListener(this@MediaPlayerService)
             setOnErrorListener(this@MediaPlayerService)
-            setOnPreparedListener(this@MediaPlayerService)
+            setOnCompletionListener { callback.onCompletion() }
+            setOnPreparedListener {
+                callback.onPrepared()
+                playMedia()
+            }
             setAudioAttributes(
                 AudioAttributes.Builder()
                     .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
@@ -60,7 +65,10 @@ class MediaPlayerService : Service(), MediaPlayer.OnCompletionListener,
             )
             setDataSource(
                 applicationContext,
-                ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songsList[currentSongIndex].id)
+                ContentUris.withAppendedId(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    songsList[currentSongIndex].id
+                )
             )
             prepareAsync()
         }
@@ -75,8 +83,7 @@ class MediaPlayerService : Service(), MediaPlayer.OnCompletionListener,
     }
 
     fun skipNext() {
-        if (currentSongIndex < songsList.size) {
-            currentSongIndex++
+        if (canSkipNext()) {
             mediaPlayer.apply {
                 reset()
                 setDataSource(
@@ -90,29 +97,52 @@ class MediaPlayerService : Service(), MediaPlayer.OnCompletionListener,
         }
     }
 
+    private fun canSkipNext(): Boolean {
+        return if (currentSongIndex < songsList.size) {
+            currentSongIndex++
+            true
+        } else false
+    }
+
     fun skipPrevious() {
-        if (currentSongIndex > 0) {
-            currentSongIndex--
+        if (canSkipPrevious()) {
             mediaPlayer.apply {
                 reset()
                 setDataSource(
                     applicationContext,
-                    ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songsList[currentSongIndex].id)
+                    ContentUris.withAppendedId(
+                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        songsList[currentSongIndex].id
+                    )
                 )
                 prepareAsync()
             }
         }
     }
 
+    private fun canSkipPrevious(): Boolean {
+        return if (currentSongIndex > 0) {
+            currentSongIndex--
+            true
+        } else false
+    }
+
     fun seekTo(position: Int) {
-        if (isPlaying()) mediaPlayer.seekTo(position)
+        mediaPlayer.seekTo(position)
+    }
+
+    fun restart() {
+        currentSongIndex = -1
+        skipNext()
+    }
+
+    fun setLooping(looping: Boolean) {
+        mediaPlayer.isLooping = looping
     }
 
     fun isPlaying() = mediaPlayer.isPlaying
 
-    override fun onPrepared(mediaPlayer: MediaPlayer?) { playMedia() }
-
-    override fun onCompletion(mediaPlayer: MediaPlayer?) { callback.onCompletion() }
+    fun currentPosition() = mediaPlayer.currentPosition
 
     private fun requestAudioFocus(): Boolean {
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -168,7 +198,8 @@ class MediaPlayerService : Service(), MediaPlayer.OnCompletionListener,
         mediaPlayer.stop()
         mediaPlayer.release()
         removeAudioFocus()
-        LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(mediaBroadcastReceiver)
+        LocalBroadcastManager.getInstance(applicationContext)
+            .unregisterReceiver(mediaBroadcastReceiver)
     }
 
     inner class LocalBinder : Binder() {
@@ -187,12 +218,18 @@ class MediaPlayerService : Service(), MediaPlayer.OnCompletionListener,
                     val position = intent.getIntExtra("seek_to", mediaPlayer.currentPosition)
                     seekTo(position)
                 }
+                INTENT_ACTION_RESTART -> restart()
+                INTENT_ACTION_SET_LOOPING -> {
+                    val looping = intent.getBooleanExtra("looping", mediaPlayer.isLooping)
+                    setLooping(looping)
+                }
             }
         }
     }
 
     interface MediaPlayerCallback {
         fun onCompletion()
+        fun onPrepared()
     }
 
     companion object {
@@ -202,5 +239,7 @@ class MediaPlayerService : Service(), MediaPlayer.OnCompletionListener,
         const val INTENT_ACTION_SKIP_PREVIOUS = "com.example.musicplayer.ACTION_SKIP_PREVIOUS"
         const val INTENT_ACTION_STOP = "com.example.musicplayer.ACTION_STOP"
         const val INTENT_ACTION_SEEK = "com.example.musicplayer.ACTION_SEEK"
+        const val INTENT_ACTION_RESTART = "com.example.musicplayer.ACTION_RESTART"
+        const val INTENT_ACTION_SET_LOOPING = "com.example.musicplayer.ACTION_SET_LOOPING"
     }
 }

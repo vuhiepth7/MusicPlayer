@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -43,15 +44,6 @@ class MainActivity : AppCompatActivity(), SongAdapter.SongListener {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         initSongList()
         observeData()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        if (ContextCompat.checkSelfPermission(
-                this,
-                storagePermission.permission
-            ) == PackageManager.PERMISSION_GRANTED
-        ) viewModel.loadSongsFromContentResolver()
     }
 
     private fun initSongList() {
@@ -184,6 +176,11 @@ class MainActivity : AppCompatActivity(), SongAdapter.SongListener {
         PlayerActivity.setSongIndex(position)
         val intent = Intent(this, PlayerActivity::class.java)
         startActivity(intent)
+    }
+
+    override fun setSongFavorite(position: Int, isFavorite: Boolean) {
+        val favorite = if (isFavorite) 1 else 0
+        viewModel.updateSong(songs[position].copy(favorite = favorite))
     }
 }
 

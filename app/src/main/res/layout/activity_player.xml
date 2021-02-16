@@ -51,12 +51,16 @@
             app:layout_constraintStart_toStartOf="parent"
             tools:text="@string/sample_artist" />
 
-        <androidx.appcompat.widget.AppCompatImageView
+        <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/favorite"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/keyline_4"
+            android:layout_height="@dimen/keyline_4"
             android:layout_marginEnd="@dimen/keyline_3"
             android:layout_marginBottom="@dimen/keyline_3"
+            android:background="@drawable/favorite_checked"
+            android:backgroundTint="?colorSecondary"
+            android:button="@null"
+            android:padding="@dimen/keyline_2"
             app:layout_constraintBottom_toTopOf="@+id/seek_bar"
             app:layout_constraintEnd_toEndOf="parent"
             app:srcCompat="@drawable/ic_favorite_outline" />
@@ -135,12 +139,13 @@
                 android:padding="@dimen/keyline_3"
                 app:srcCompat="@drawable/ic_skip_next" />
 
-            <androidx.appcompat.widget.AppCompatImageView
+            <com.google.android.material.checkbox.MaterialCheckBox
                 android:id="@+id/repeat"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:padding="@dimen/keyline_3"
+                android:layout_width="@dimen/keyline_4"
+                android:layout_height="@dimen/keyline_4"
+                android:layout_margin="@dimen/keyline_3"
+                android:background="@drawable/repeat_checked"
+                android:button="@null"
                 app:srcCompat="@drawable/ic_repeat" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>

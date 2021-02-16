@@ -16,6 +16,9 @@ class SongAdapter(private val listener: SongListener) :
         val binding = ItemSongBinding.inflate(layoutInflater, parent, false)
         val songViewHolder = SongViewHolder(binding)
         binding.root.setOnClickListener { listener.onSongClicked(songViewHolder.adapterPosition) }
+        binding.favorite.setOnCheckedChangeListener { button, _ ->
+            listener.setSongFavorite(songViewHolder.adapterPosition, button.isChecked)
+        }
         return songViewHolder
     }
 
@@ -27,6 +30,7 @@ class SongAdapter(private val listener: SongListener) :
         fun bind(item: Song) {
             binding.apply {
                 song = item
+                favorite.isChecked = item.favorite == 1
                 executePendingBindings()
             }
         }
@@ -44,5 +48,6 @@ class SongAdapter(private val listener: SongListener) :
 
     interface SongListener {
         fun onSongClicked(position: Int)
+        fun setSongFavorite(position: Int, isFavorite: Boolean)
     }
 }

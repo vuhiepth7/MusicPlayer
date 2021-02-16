@@ -6,7 +6,8 @@ data class Song(
     val artist: String,
     val thumbnail: String,
     val duration: Long,
-    val size: Long
+    val size: Long,
+    val favorite: Int = 0
 ) {
     companion object {
         const val TABLE_NAME = "song"
@@ -16,5 +17,6 @@ data class Song(
         const val COLUMN_NAME_THUMBNAIL = "thumbnail"
         const val COLUMN_NAME_DURATION = "duration"
         const val COLUMN_NAME_SIZE = "size"
+        const val COLUMN_NAME_FAVORITE = "favorite"
     }
 }

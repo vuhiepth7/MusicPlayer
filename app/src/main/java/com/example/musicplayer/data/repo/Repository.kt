@@ -6,4 +6,5 @@ import com.example.musicplayer.utils.Result
 interface Repository {
     fun getSongsFromDb() : Result<List<Song>>
     fun getSongsFromContentResolver() : Result<List<Song>>
+    fun updateSong(song: Song)
 }

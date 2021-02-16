@@ -46,7 +46,7 @@ class ContentResolverHelper(context: Context) : SongDataSource {
         return songs
     }
 
+    override fun updateSong(song: Song) {}
     override fun addAllSongs(songs: List<Song>) {}
-
     override fun deleteAll() {}
 }

@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:text="@{song.title}"
             app:layout_constraintBottom_toTopOf="@id/artist"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/favorite"
             app:layout_constraintStart_toEndOf="@+id/thumbnail"
             app:layout_constraintTop_toTopOf="@+id/thumbnail"
             app:layout_constraintVertical_chainStyle="packed"
@@ -46,10 +46,23 @@
             android:layout_height="wrap_content"
             android:text="@{song.artist}"
             app:layout_constraintBottom_toBottomOf="@+id/thumbnail"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/favorite"
             app:layout_constraintStart_toEndOf="@+id/thumbnail"
             app:layout_constraintTop_toBottomOf="@+id/title"
             tools:text="@string/sample_artist" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/favorite"
+            android:layout_width="@dimen/keyline_4"
+            android:layout_height="@dimen/keyline_4"
+            android:layout_marginEnd="@dimen/keyline_2"
+            android:background="@drawable/favorite_checked"
+            android:backgroundTint="?colorSecondary"
+            android:button="@null"
+            android:padding="@dimen/keyline_2"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

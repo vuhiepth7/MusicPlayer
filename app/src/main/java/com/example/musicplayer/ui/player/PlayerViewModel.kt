@@ -2,8 +2,10 @@ package com.example.musicplayer.ui.player
 
 import androidx.lifecycle.*
 import com.example.musicplayer.data.model.Song
+import com.example.musicplayer.data.repo.Repository
+import kotlinx.coroutines.launch
 
-class PlayerViewModel : ViewModel() {
+class PlayerViewModel(private val repository: Repository) : ViewModel() {
 
     private val _currentSongIndex = MutableLiveData<Int>()
     val currentSongIndex: LiveData<Int>
@@ -27,5 +29,15 @@ class PlayerViewModel : ViewModel() {
             _currentSongIndex.value = currentSongIndex.value?.minus(1)
             true
         } else false
+    }
+
+    fun restart() {
+        _currentSongIndex.value = 0
+    }
+
+    fun updateSong(song: Song) {
+        viewModelScope.launch {
+            repository.updateSong(song)
+        }
     }
 }
