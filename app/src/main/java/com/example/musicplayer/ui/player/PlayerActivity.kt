@@ -5,17 +5,15 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.Handler
 import android.os.IBinder
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatSeekBar
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.viewpager.widget.PagerAdapter
@@ -27,12 +25,12 @@ import com.example.musicplayer.data.model.Song
 import com.example.musicplayer.data.repo.SongRepository
 import com.example.musicplayer.databinding.ActivityPlayerBinding
 import com.example.musicplayer.databinding.ItemSongImageBinding
-import com.example.musicplayer.ui.main.MainViewModel
 import com.example.musicplayer.ui.main.MainViewModelFactory
+import kotlinx.coroutines.*
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class PlayerActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback {
+class PlayerActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback, CoroutineScope by MainScope() {
 
     private lateinit var playerService: MediaPlayerService
     private var isBound = false
@@ -46,6 +44,7 @@ class PlayerActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallba
         ).get(PlayerViewModel::class.java)
     }
     private val localBroadcastManager by lazy { LocalBroadcastManager.getInstance(this@PlayerActivity) }
+    private var seekBarJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -128,6 +127,7 @@ class PlayerActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallba
             currentItem = currentSongIndex
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
                 override fun onPageSelected(position: Int) {
+                    seekBarJob?.cancel()
                     if (currentSongIndex == position) return
                     val intent = when {
                         currentSongIndex < position -> {
@@ -168,6 +168,18 @@ class PlayerActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallba
                     seekBar.progress = 0
                     seekBar.max = currentSong.duration.toInt()
                     viewPager.currentItem = index
+                    updateSeekBarProgress(seekBar)
+                }
+            }
+        }
+    }
+
+    private fun updateSeekBarProgress(seekBar: AppCompatSeekBar) {
+        launch {
+            seekBarJob = launch {
+                while (true) {
+                    seekBar.progress = seekBar.progress + 1000
+                    delay(1000)
                 }
             }
         }
@@ -214,6 +226,7 @@ class PlayerActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallba
     }
 
     override fun onCompletion() {
+        seekBarJob?.cancel()
         if (viewModel.skipNext()) {
             localBroadcastManager.sendBroadcast(Intent(MediaPlayerService.INTENT_ACTION_SKIP_NEXT))
         } else {
@@ -224,5 +237,10 @@ class PlayerActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallba
 
     override fun onPrepared() {
         binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_pause, theme))
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cancel()
     }
 }
