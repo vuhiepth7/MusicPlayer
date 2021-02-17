@@ -6,4 +6,6 @@
     <string name="sample_title">Blinding Lights</string>
     <string name="sample_artist">The Weeknd</string>
     <string name="sample_timestamp">0:00</string>
+    <string name="title_home">Home</string>
+    <string name="title_library">Library</string>
 </resources>

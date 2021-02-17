@@ -87,15 +87,15 @@ class PlayerActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallba
                 val favorite = if (button.isChecked) 1 else 0
                 viewModel.updateSong(songsList[currentSongIndex].copy(favorite = favorite))
             }
-            playPause.setOnClickListener {
-                val intent = if (playerService.isPlaying()) {
+            playPause.setOnClickListener { if (playerService.isPlaying()) {
                     binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_play, theme))
-                    Intent(MediaPlayerService.INTENT_ACTION_PAUSE)
+//                    Intent(MediaPlayerService.INTENT_ACTION_PAUSE)
+                playerService.pauseMedia()
                 } else {
                     binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_pause, theme))
-                    Intent(MediaPlayerService.INTENT_ACTION_PLAY)
-                }
-                localBroadcastManager.sendBroadcast(intent)
+//                    Intent(MediaPlayerService.INTENT_ACTION_PLAY)
+                playerService.playMedia()
+            }
             }
             skipNext.setOnClickListener {
                 if (viewModel.skipNext()) {
