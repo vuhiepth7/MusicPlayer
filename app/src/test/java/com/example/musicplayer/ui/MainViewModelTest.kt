@@ -62,7 +62,7 @@ class MainViewModelTest {
         runBlockingTest {
             `when`(repository.getSongsFromContentResolver()).thenReturn(Result.success(songsList))
             mainViewModel.songs.observeForever(observer)
-            mainViewModel.loadSongsFromContentResolver()
+            mainViewModel.updateDb()
 
             verify(observer).onChanged(Result.loading(null))
             verify(observer).onChanged(Result.success(songsList))

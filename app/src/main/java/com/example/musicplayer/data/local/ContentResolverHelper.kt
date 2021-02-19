@@ -6,47 +6,43 @@ import android.net.Uri
 import android.provider.MediaStore
 import com.example.musicplayer.data.model.Song
 
-class ContentResolverHelper(context: Context) : SongDataSource {
+class ContentResolverHelper(context: Context) {
 
     private val contentResolver = context.contentResolver
 
-    override fun getAllSongs(): List<Song> {
+    fun getAll(): List<Song> {
         val songs = mutableListOf<Song>()
         val projections = arrayOf(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
             MediaStore.Audio.Media.ALBUM_ID,
-            MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.SIZE
+            MediaStore.Audio.Media.DURATION
         )
-        val selection = "${MediaStore.Audio.Media.TITLE} != \"\""
-        val sortOrder = "${MediaStore.Audio.Media.TITLE} ASC"
+        val selection = "${MediaStore.Audio.Media.TITLE} != ?"
+        val selectionArgs = arrayOf("\"\"")
         val cursor = contentResolver.query(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, projections,
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            projections,
             selection,
-            null,
-            sortOrder
+            selectionArgs,
+            null
         )
-        cursor?.use { cursor ->
-            while (cursor.moveToNext()) {
-                val id = cursor.getLong(cursor.getColumnIndex(projections[0]))
-                val title = cursor.getString(cursor.getColumnIndex(projections[1]))
-                val artist = cursor.getString(cursor.getColumnIndex(projections[2]))
-                val albumId = cursor.getLong(cursor.getColumnIndex(projections[3]))
-                val duration = cursor.getLong(cursor.getColumnIndex(projections[4]))
-                val size = cursor.getLong(cursor.getColumnIndex(projections[5]))
+        if (cursor != null) {
+            with(cursor) {
+                while (moveToNext()) {
+                    val id = getLong(getColumnIndex(projections[0]))
+                    val title = getString(getColumnIndex(projections[1]))
+                    val artist = getString(getColumnIndex(projections[2]))
+                    val albumId = getLong(getColumnIndex(projections[3]))
+                    val duration = getLong(getColumnIndex(projections[4]))
+                    val sArtworkUri = Uri.parse("content://media/external/audio/albumart")
+                    val thumbnailUri = ContentUris.withAppendedId(sArtworkUri, albumId)
 
-                val sArtworkUri = Uri.parse("content://media/external/audio/albumart")
-                val uri = ContentUris.withAppendedId(sArtworkUri, albumId)
-
-                songs.add(Song(id, title, artist, uri.toString(), duration, size))
+                    songs.add(Song(id, title, artist, thumbnailUri.toString(), duration))
+                }
             }
         }
         return songs
     }
-
-    override fun updateSong(song: Song) {}
-    override fun addAllSongs(songs: List<Song>) {}
-    override fun deleteAll() {}
 }

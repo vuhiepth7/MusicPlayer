@@ -30,7 +30,7 @@ class SongAdapter(private val listener: SongListener) :
         fun bind(item: Song) {
             binding.apply {
                 song = item
-                favorite.isChecked = item.favorite == 1
+                favorite.isChecked = item.favorite
                 executePendingBindings()
             }
         }

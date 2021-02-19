@@ -16,7 +16,7 @@
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/thumbnail"
-            imageUrl="@{song.thumbnail}"
+            imageUrl="@{song.thumbnailUri}"
             android:layout_width="@dimen/thumbnail_size"
             android:layout_height="@dimen/thumbnail_size"
             android:layout_margin="@dimen/keyline_2"
@@ -55,7 +55,7 @@
             android:id="@+id/favorite"
             android:layout_width="@dimen/keyline_4"
             android:layout_height="@dimen/keyline_4"
-            android:layout_marginEnd="@dimen/keyline_2"
+            android:layout_marginEnd="@dimen/keyline_3"
             android:background="@drawable/favorite_checked"
             android:backgroundTint="?colorSecondary"
             android:button="@null"

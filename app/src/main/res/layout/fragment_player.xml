@@ -3,6 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <data>
+
+        <variable
+            name="song"
+            type="com.example.musicplayer.data.model.Song" />
+    </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -35,6 +41,7 @@
             style="@style/MusicPlayer.TextAppearance.Title.Large"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:text="@{song.title}"
             app:layout_constraintBottom_toTopOf="@+id/artist_tv"
             app:layout_constraintEnd_toStartOf="@+id/favorite"
             app:layout_constraintStart_toStartOf="parent"
@@ -46,6 +53,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/keyline_3"
+            android:text="@{song.artist}"
             app:layout_constraintBottom_toTopOf="@+id/seek_bar"
             app:layout_constraintEnd_toStartOf="@+id/favorite"
             app:layout_constraintStart_toStartOf="parent"
@@ -60,6 +68,7 @@
             android:background="@drawable/favorite_checked"
             android:backgroundTint="?colorSecondary"
             android:button="@null"
+            android:checked="@{song.favorite}"
             android:padding="@dimen/keyline_2"
             app:layout_constraintBottom_toTopOf="@+id/seek_bar"
             app:layout_constraintEnd_toEndOf="parent"

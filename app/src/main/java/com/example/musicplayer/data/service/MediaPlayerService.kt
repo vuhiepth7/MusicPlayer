@@ -1,4 +1,4 @@
-package com.example.musicplayer.ui.player
+package com.example.musicplayer.data.service
 
 import android.app.Service
 import android.content.*
@@ -6,15 +6,13 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
-import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.provider.MediaStore
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.example.musicplayer.data.model.Song
-import java.lang.Exception
+import com.example.musicplayer.ui.player.PlayerActivity
 
 class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
     AudioManager.OnAudioFocusChangeListener {

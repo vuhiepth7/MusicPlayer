@@ -1,13 +1,17 @@
 package com.example.musicplayer.data.model
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity
 data class Song(
-    val id: Long,
-    val title: String,
-    val artist: String,
-    val thumbnail: String,
-    val duration: Long,
-    val size: Long,
-    val favorite: Int = 0
+    @PrimaryKey val id: Long,
+    @ColumnInfo val title: String,
+    @ColumnInfo val artist: String,
+    @ColumnInfo val thumbnailUri: String,
+    @ColumnInfo val duration: Long,
+    @ColumnInfo val favorite: Boolean = false
 ) {
     companion object {
         const val TABLE_NAME = "song"
