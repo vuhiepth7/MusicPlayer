@@ -12,6 +12,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
+import com.example.musicplayer.R
 import com.example.musicplayer.data.model.Song
 import com.example.musicplayer.databinding.FragmentPlayerBinding
 import com.example.musicplayer.databinding.ItemSongImageBinding
@@ -41,9 +42,15 @@ class PlayerFragment : Fragment() {
         }
         viewModel.currentSong.observe(viewLifecycleOwner) {
             it?.let {
-                binding.song = it
-                binding.viewPager.currentItem = viewModel.currentSongIndex.value ?: 0
+                binding.apply {
+                    song = it
+                    viewPager.currentItem = viewModel.currentSongIndex.value ?: 0
+                }
             }
+        }
+        viewModel.isPlaying.observe(viewLifecycleOwner) { isPlaying ->
+            if (isPlaying) binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_pause, requireActivity().theme))
+            else binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_play, requireActivity().theme))
         }
     }
 
@@ -55,6 +62,7 @@ class PlayerFragment : Fragment() {
             }
             skipNext.setOnClickListener { viewModel.skipNext() }
             skipPrevious.setOnClickListener { viewModel.skipPrevious() }
+            playPause.setOnClickListener { viewModel.togglePlayPause() }
         }
     }
 
@@ -66,7 +74,6 @@ class PlayerFragment : Fragment() {
                 override fun onPageSelected(position: Int) {
                     viewModel.setCurrentSongIndex(position)
                 }
-
                 override fun onPageScrollStateChanged(state: Int) {}
                 override fun onPageScrolled(
                     position: Int,

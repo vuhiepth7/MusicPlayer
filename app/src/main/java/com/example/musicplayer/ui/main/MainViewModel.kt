@@ -1,11 +1,10 @@
 package com.example.musicplayer.ui.main
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.*
 import com.example.musicplayer.ServiceLocator
 import com.example.musicplayer.data.model.Song
-import com.example.musicplayer.ui.player.PlayerActivity
+import com.example.musicplayer.utils.Event
 import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -20,6 +19,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val currentSong: LiveData<Song> = _currentSongIndex.map { songs.value?.get(it)!! }
 
+    private val _isPlaying = MutableLiveData<Boolean>()
+    val isPlaying: LiveData<Boolean>
+        get() = _isPlaying
+
+    private val _songChangeEvent = MutableLiveData<Event<Long>>()
+    val songChangeEvent: LiveData<Event<Long>>
+        get() = _songChangeEvent
+
+    private val _togglePlayPauseEvent = MutableLiveData<Event<Unit>>()
+    val togglePlayPauseEvent: LiveData<Event<Unit>>
+        get() = _togglePlayPauseEvent
+
     fun update(song: Song) {
         viewModelScope.launch {
             songRepo.update(song)
@@ -33,6 +44,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun skipNext(): Boolean {
         return if (_currentSongIndex.value!! < songs.value?.size!! - 1) {
             _currentSongIndex.value = currentSongIndex.value?.plus(1)
+            _songChangeEvent.value = Event(currentSong.value?.id ?: 0)
             true
         } else false
     }
@@ -40,8 +52,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun skipPrevious(): Boolean {
         return if (_currentSongIndex.value!! > 0) {
             _currentSongIndex.value = currentSongIndex.value?.minus(1)
+            _songChangeEvent.value = Event(currentSong.value?.id ?: 0)
             true
         } else false
+    }
+
+    fun togglePlayPause() {
+        _togglePlayPauseEvent.value = Event(Unit)
+    }
+
+    fun setIsPlaying(isPlaying: Boolean) {
+        _isPlaying.value = isPlaying
     }
 
     fun updateDb() {

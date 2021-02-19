@@ -1,9 +1,13 @@
 package com.example.musicplayer.ui.main
 
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.IBinder
 import android.provider.Settings
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -16,16 +20,19 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.musicplayer.R
 import com.example.musicplayer.data.local.AppPreferences
+import com.example.musicplayer.data.service.MediaPlayerService
 import com.example.musicplayer.databinding.ActivityMainBinding
 import com.example.musicplayer.utils.AppPermission
 import com.example.musicplayer.utils.PermissionStatus
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
     private val viewModel: MainViewModel by viewModels()
     private val storagePermission by lazy { AppPermission.READ_EXTERNAL_STORAGE }
+    private lateinit var playerService: MediaPlayerService
+    private var isBound = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +42,24 @@ class MainActivity : AppCompatActivity() {
         binding.bottomNavView.setupWithNavController(navController)
 
         requestPermission(storagePermission)
+        bindService()
+
+        viewModel.songChangeEvent.observe(this) {
+            it?.getContentIfNotHandled()?.let { id -> playerService.setSong(id) }
+        }
+        viewModel.togglePlayPauseEvent.observe(this) {
+            it?.getContentIfNotHandled()?.let {
+                with(playerService) {
+                    viewModel.setIsPlaying(!isPlaying())
+                    if (isPlaying()) pauseMedia()
+                    else playMedia()
+                }
+            }
+        }
+        viewModel.currentSong.observe(this) {
+            playerService.setSong(it.id)
+            viewModel.setIsPlaying(!playerService.isPlaying())
+        }
     }
 
     private fun requestPermission(appPermission: AppPermission) {
@@ -46,6 +71,25 @@ class MainActivity : AppCompatActivity() {
                 ), appPermission.requestCode
             )
             PermissionStatus.DENIED -> showPermissionDeniedDialog(storagePermission)
+        }
+    }
+
+    private fun bindService() {
+        val serviceConnection = object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                val binder = service as MediaPlayerService.LocalBinder
+                playerService = binder.getService()
+                playerService.registerCallback(this@MainActivity)
+                isBound = true
+            }
+
+            override fun onServiceDisconnected(name: ComponentName?) {
+                isBound = false
+            }
+        }
+        if (!isBound) {
+            val intent = Intent(this, MediaPlayerService::class.java)
+            bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
         }
     }
 
@@ -64,29 +108,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        when (requestCode) {
-            storagePermission.requestCode -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    viewModel.updateDb()
-                } else if (permissionStatus(storagePermission) == PermissionStatus.RATIONALE_NEEDED) {
-                    showPermissionRationaleNeededDialog(storagePermission)
-                } else {
-                    requestPermission(storagePermission)
-                }
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
     private fun showPermissionRationaleNeededDialog(permission: AppPermission) {
         AlertDialog.Builder(this)
             .setTitle(permission.messageResId)
-            .setNegativeButton("Exit app") { _, _ -> finish()}
+            .setNegativeButton("Exit app") { _, _ -> finish() }
             .setPositiveButton("Allow") { _, _ -> requestPermission(permission) }
             .setCancelable(false)
             .show()
@@ -117,6 +142,31 @@ class MainActivity : AppCompatActivity() {
             this,
             appPermission.permission
         ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun onCompletion() {
+        if (!viewModel.skipNext()) { viewModel.togglePlayPause()}
+    }
+
+    override fun onPrepared() {
+
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
+        when (requestCode) {
+            storagePermission.requestCode -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    viewModel.updateDb()
+                } else if (permissionStatus(storagePermission) == PermissionStatus.RATIONALE_NEEDED) {
+                    showPermissionRationaleNeededDialog(storagePermission)
+                } else {
+                    requestPermission(storagePermission)
+                }
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 }
 
