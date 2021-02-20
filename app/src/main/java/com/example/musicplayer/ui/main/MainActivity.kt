@@ -7,7 +7,9 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.provider.Settings
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -33,6 +35,13 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
     private val storagePermission by lazy { AppPermission.READ_EXTERNAL_STORAGE }
     private lateinit var playerService: MediaPlayerService
     private var isBound = false
+    private val handler = Handler(Looper.getMainLooper())
+    private val updateSeekBarRunnable = object : Runnable {
+        override fun run() {
+            viewModel.setCurrentProgress(playerService.currentPosition())
+            handler.postDelayed(this, 1000)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,8 +60,14 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
             it?.getContentIfNotHandled()?.let {
                 with(playerService) {
                     viewModel.setIsPlaying(!isPlaying())
-                    if (isPlaying()) pauseMedia()
-                    else playMedia()
+                    if (isPlaying()) {
+                        pauseMedia()
+                        handler.removeCallbacks(updateSeekBarRunnable)
+                    }
+                    else {
+                        playMedia()
+                        handler.postDelayed(updateSeekBarRunnable, 0)
+                    }
                 }
             }
         }
@@ -60,7 +75,11 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
             if (playerService.getSongId() != it.id) {
                 playerService.setSongId(it.id)
                 viewModel.setIsPlaying(!playerService.isPlaying())
+                handler.postDelayed(updateSeekBarRunnable, 0)
             }
+        }
+        viewModel.seekToEvent.observe(this) {
+            it.getContentIfNotHandled()?.let { progress -> playerService.seekTo(progress) }
         }
     }
 
@@ -169,6 +188,16 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        handler.postDelayed(updateSeekBarRunnable, 0)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        handler.removeCallbacks(updateSeekBarRunnable)
     }
 }
 

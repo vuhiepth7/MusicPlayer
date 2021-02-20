@@ -31,6 +31,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val togglePlayPauseEvent: LiveData<Event<Unit>>
         get() = _togglePlayPauseEvent
 
+    private val _currentProgress = MutableLiveData<Int>()
+    val currentProgress: LiveData<Int>
+        get() = _currentProgress
+
+    private val _seekToEvent = MutableLiveData<Event<Int>>()
+    val seekToEvent: LiveData<Event<Int>>
+        get() = _seekToEvent
+
     fun update(song: Song) {
         viewModelScope.launch {
             songRepo.update(song)
@@ -63,6 +71,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setIsPlaying(isPlaying: Boolean) {
         _isPlaying.value = isPlaying
+    }
+
+    fun setCurrentProgress(progress: Int) {
+        _currentProgress.value = progress
+    }
+
+    fun setSeekTo(progress: Int) {
+        _seekToEvent.value = Event((progress))
     }
 
     fun updateDb() {

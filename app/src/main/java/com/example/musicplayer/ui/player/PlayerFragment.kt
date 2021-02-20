@@ -2,10 +2,10 @@ package com.example.musicplayer.ui.player
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SeekBar
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -18,6 +18,7 @@ import com.example.musicplayer.databinding.FragmentPlayerBinding
 import com.example.musicplayer.databinding.ItemSongImageBinding
 import com.example.musicplayer.ui.main.MainViewModel
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class PlayerFragment : Fragment() {
 
@@ -44,6 +45,10 @@ class PlayerFragment : Fragment() {
             it?.let {
                 binding.apply {
                     song = it
+                    seekBar.progress = 0
+                    currentTimestamp.text = getMinutesSeconds(0)
+                    endTimestamp.text = getMinutesSeconds(it.duration)
+                    seekBar.max = it.duration.toInt()
                     viewPager.currentItem = viewModel.currentSongIndex.value ?: 0
                 }
             }
@@ -52,6 +57,18 @@ class PlayerFragment : Fragment() {
             if (isPlaying) binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_pause, requireActivity().theme))
             else binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_play, requireActivity().theme))
         }
+        viewModel.currentProgress.observe(viewLifecycleOwner) {
+            binding.seekBar.progress = it
+            binding.currentTimestamp.text = getMinutesSeconds(it.toLong())
+        }
+    }
+
+    private fun getMinutesSeconds(duration: Long): String {
+        return String.format(
+            "%02d:%02d",
+            TimeUnit.MILLISECONDS.toMinutes(duration),
+            TimeUnit.MILLISECONDS.toSeconds(duration) % 60
+        )
     }
 
     private fun setupClickListeners() {
@@ -63,6 +80,13 @@ class PlayerFragment : Fragment() {
             skipNext.setOnClickListener { viewModel.skipNext() }
             skipPrevious.setOnClickListener { viewModel.skipPrevious() }
             playPause.setOnClickListener { viewModel.togglePlayPause() }
+            seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {}
+                override fun onStartTrackingTouch(p0: SeekBar?) {}
+                override fun onStopTrackingTouch(p0: SeekBar?) {
+                    viewModel.setSeekTo(seekBar.progress)
+                }
+            })
         }
     }
 
