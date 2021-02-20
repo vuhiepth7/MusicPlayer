@@ -22,6 +22,7 @@ class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
     private lateinit var audioManager: AudioManager
     private val iBinder = LocalBinder()
     private lateinit var callback: MediaPlayerCallback
+    private var currentSongId: Long? = null
 
     override fun onBind(intent: Intent?): IBinder {
         if (!requestAudioFocus()) stopSelf()
@@ -47,7 +48,8 @@ class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
         }
     }
 
-    fun setSong(id: Long) {
+    fun setSongId(id: Long) {
+        currentSongId = id
         mediaPlayer.apply {
             reset()
             setDataSource(
@@ -58,6 +60,8 @@ class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
         }
     }
 
+    fun getSongId() = currentSongId
+
     fun playMedia() {
         if (!isPlaying()) mediaPlayer.start()
     }
@@ -67,7 +71,7 @@ class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
     }
 
     fun reset(id: Long) {
-        setSong(id)
+        setSongId(id)
     }
 
     fun seekTo(position: Int) {

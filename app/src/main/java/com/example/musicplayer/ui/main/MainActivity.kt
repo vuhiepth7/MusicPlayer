@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         bindService()
 
         viewModel.songChangeEvent.observe(this) {
-            it?.getContentIfNotHandled()?.let { id -> playerService.setSong(id) }
+            it?.getContentIfNotHandled()?.let { id -> playerService.setSongId(id) }
         }
         viewModel.togglePlayPauseEvent.observe(this) {
             it?.getContentIfNotHandled()?.let {
@@ -57,8 +57,10 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
             }
         }
         viewModel.currentSong.observe(this) {
-            playerService.setSong(it.id)
-            viewModel.setIsPlaying(!playerService.isPlaying())
+            if (playerService.getSongId() != it.id) {
+                playerService.setSongId(it.id)
+                viewModel.setIsPlaying(!playerService.isPlaying())
+            }
         }
     }
 
