@@ -11,6 +11,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.provider.Settings
+import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -39,6 +40,7 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
     private val updateSeekBarRunnable = object : Runnable {
         override fun run() {
             viewModel.setCurrentProgress(playerService.currentPosition())
+            binding.progressIndicator.progress = playerService.currentPosition()
             handler.postDelayed(this, 1000)
         }
     }
@@ -52,6 +54,21 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
 
         requestPermission(storagePermission)
         bindService()
+        setupClickListeners()
+
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.nav_player -> {
+                    binding.bottomNavView.visibility = View.GONE
+                    binding.miniPlayer.visibility = View.GONE
+                }
+                else -> {
+                    binding.bottomNavView.visibility = View.VISIBLE
+                    if (viewModel.currentSong.value != null) binding.miniPlayer.visibility =
+                        View.VISIBLE
+                }
+            }
+        }
 
         viewModel.songChangeEvent.observe(this) {
             it?.getContentIfNotHandled()?.let { id -> playerService.setSongId(id) }
@@ -63,19 +80,24 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
                     if (isPlaying()) {
                         pauseMedia()
                         handler.removeCallbacks(updateSeekBarRunnable)
-                    }
-                    else {
+                    } else {
                         playMedia()
                         handler.postDelayed(updateSeekBarRunnable, 0)
                     }
                 }
             }
         }
+        viewModel.isPlaying.observe(this) { isPlaying ->
+            if (isPlaying) binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_pause, theme))
+            else binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_play, theme))
+        }
         viewModel.currentSong.observe(this) {
+            binding.song = it
             if (playerService.getSongId() != it.id) {
                 playerService.setSongId(it.id)
                 viewModel.setIsPlaying(!playerService.isPlaying())
                 handler.postDelayed(updateSeekBarRunnable, 0)
+                binding.progressIndicator.max = it.duration.toInt()
             }
         }
         viewModel.seekToEvent.observe(this) {
@@ -111,6 +133,13 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         if (!isBound) {
             val intent = Intent(this, MediaPlayerService::class.java)
             bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+        }
+    }
+
+    private fun setupClickListeners() {
+        binding.apply {
+            playPause.setOnClickListener { viewModel.togglePlayPause() }
+            miniPlayer.setOnClickListener { navController.navigate(R.id.nav_player) }
         }
     }
 
@@ -166,7 +195,9 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
     }
 
     override fun onCompletion() {
-        if (!viewModel.skipNext()) { viewModel.setIsPlaying(false)}
+        if (!viewModel.skipNext()) {
+            viewModel.setIsPlaying(false)
+        }
     }
 
     override fun onPrepared() {

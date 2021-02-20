@@ -11,9 +11,6 @@ import android.os.Build
 import android.os.IBinder
 import android.provider.MediaStore
 import android.util.Log
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.example.musicplayer.data.model.Song
-import com.example.musicplayer.ui.player.PlayerActivity
 
 class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
     AudioManager.OnAudioFocusChangeListener {
