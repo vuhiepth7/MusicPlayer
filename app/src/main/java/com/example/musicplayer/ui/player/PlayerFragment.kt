@@ -45,8 +45,6 @@ class PlayerFragment : Fragment() {
             it?.let {
                 binding.apply {
                     song = it
-                    seekBar.progress = 0
-                    currentTimestamp.text = getMinutesSeconds(0)
                     endTimestamp.text = getMinutesSeconds(it.duration)
                     seekBar.max = it.duration.toInt()
                     viewPager.currentItem = viewModel.currentSongIndex.value ?: 0
