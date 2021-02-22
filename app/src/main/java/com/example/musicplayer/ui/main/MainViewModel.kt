@@ -3,6 +3,8 @@ package com.example.musicplayer.ui.main
 import android.app.Application
 import androidx.lifecycle.*
 import com.example.musicplayer.ServiceLocator
+import com.example.musicplayer.data.model.Playlist
+import com.example.musicplayer.data.model.PlaylistSongCrossRef
 import com.example.musicplayer.data.model.Song
 import com.example.musicplayer.utils.Event
 import kotlinx.coroutines.launch
@@ -10,8 +12,10 @@ import kotlinx.coroutines.launch
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val songRepo = ServiceLocator.provideSongRepository(application)
+    private val playlistRepo = ServiceLocator.providePlaylistRepository(application)
 
     val songs = songRepo.getAll()
+    val playlists = playlistRepo.getPlaylists()
 
     private val _currentSongIndex = MutableLiveData<Int>()
     val currentSongIndex: LiveData<Int>
@@ -56,7 +60,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun skipNext(): Boolean {
         return if (_currentSongIndex.value!! < songs.value?.size!! - 1) {
             _currentSongIndex.value = currentSongIndex.value?.plus(1)
-            _songChangeEvent.value = Event(currentSong.value?.id ?: 0)
+            _songChangeEvent.value = Event(currentSong.value?.songId ?: 0)
             true
         } else false
     }
@@ -64,7 +68,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun skipPrevious(): Boolean {
         return if (_currentSongIndex.value!! > 0) {
             _currentSongIndex.value = currentSongIndex.value?.minus(1)
-            _songChangeEvent.value = Event(currentSong.value?.id ?: 0)
+            _songChangeEvent.value = Event(currentSong.value?.songId ?: 0)
             true
         } else false
     }
@@ -92,6 +96,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun updateDb() {
         viewModelScope.launch {
             songRepo.updateDb()
+        }
+    }
+
+    fun createPlaylist(playlist: Playlist) {
+        viewModelScope.launch {
+            playlistRepo.create(playlist)
+        }
+    }
+
+    fun addSongToPlaylist(playlistSong: PlaylistSongCrossRef) {
+        viewModelScope.launch {
+            playlistRepo.insertPlaylistSong(playlistSong)
         }
     }
 }

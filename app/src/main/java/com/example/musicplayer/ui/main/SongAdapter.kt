@@ -38,7 +38,7 @@ class SongAdapter(private val listener: SongListener) :
 
     class SongDiffCallback : DiffUtil.ItemCallback<Song>() {
         override fun areItemsTheSame(oldItem: Song, newItem: Song): Boolean {
-            return oldItem.id == newItem.id
+            return oldItem.songId == newItem.songId
         }
 
         override fun areContentsTheSame(oldItem: Song, newItem: Song): Boolean {

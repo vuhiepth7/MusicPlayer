@@ -138,8 +138,8 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
 
             currentSong.observe(this@MainActivity) {
                 binding.song = it
-                if (playerService.getSongId() != it.id) {
-                    playerService.setSongId(it.id)
+                if (playerService.getSongId() != it.songId) {
+                    playerService.setSongId(it.songId)
                     viewModel.setIsPlaying(!playerService.isPlaying())
                     viewModel.setLooping(false)
                     handler.postDelayed(updateSeekBarRunnable, 0)

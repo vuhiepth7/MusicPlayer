@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class Song(
-    @PrimaryKey val id: Long,
+    @PrimaryKey val songId: Long,
     @ColumnInfo val title: String,
     @ColumnInfo val artist: String,
     @ColumnInfo val thumbnailUri: String,
