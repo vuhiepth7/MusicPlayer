@@ -59,6 +59,8 @@ class PlayerFragment : Fragment() {
             binding.seekBar.progress = it
             binding.currentTimestamp.text = getMinutesSeconds(it.toLong())
         }
+
+        viewModel.isLooping.observe(viewLifecycleOwner) { binding.repeat.isChecked = it }
     }
 
     private fun getMinutesSeconds(duration: Long): String {
@@ -74,6 +76,9 @@ class PlayerFragment : Fragment() {
             chevronDown.setOnClickListener { findNavController().navigateUp() }
             favorite.setOnCheckedChangeListener { btn, _ ->
                 viewModel.update(viewModel.currentSong.value?.copy(favorite = btn.isChecked)!!)
+            }
+            repeat.setOnCheckedChangeListener { btn, _ ->
+                viewModel.setLooping(btn.isChecked)
             }
             skipNext.setOnClickListener { viewModel.skipNext() }
             skipPrevious.setOnClickListener { viewModel.skipPrevious() }

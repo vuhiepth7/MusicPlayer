@@ -4,7 +4,6 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.musicplayer.data.model.Song
-import com.example.musicplayer.data.repo.Repository
 import com.example.musicplayer.ui.main.MainViewModel
 import com.example.musicplayer.utils.Result
 import kotlinx.coroutines.ExperimentalCoroutinesApi

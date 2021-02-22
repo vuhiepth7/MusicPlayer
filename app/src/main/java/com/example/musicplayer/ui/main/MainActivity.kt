@@ -96,6 +96,7 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
             if (playerService.getSongId() != it.id) {
                 playerService.setSongId(it.id)
                 viewModel.setIsPlaying(!playerService.isPlaying())
+                viewModel.setLooping(false)
                 handler.postDelayed(updateSeekBarRunnable, 0)
                 binding.progressIndicator.max = it.duration.toInt()
             }
@@ -103,6 +104,7 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         viewModel.seekToEvent.observe(this) {
             it.getContentIfNotHandled()?.let { progress -> playerService.seekTo(progress) }
         }
+        viewModel.isLooping.observe(this) { playerService.setLooping(it) }
     }
 
     private fun requestPermission(appPermission: AppPermission) {
@@ -198,10 +200,6 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         if (!viewModel.skipNext()) {
             viewModel.setIsPlaying(false)
         }
-    }
-
-    override fun onPrepared() {
-
     }
 
     override fun onRequestPermissionsResult(

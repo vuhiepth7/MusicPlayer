@@ -145,6 +145,5 @@ class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
 
     interface MediaPlayerCallback {
         fun onCompletion()
-        fun onPrepared()
     }
 }

@@ -39,6 +39,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val seekToEvent: LiveData<Event<Int>>
         get() = _seekToEvent
 
+    private val _isLooping = MutableLiveData<Boolean>()
+    val isLooping: LiveData<Boolean>
+        get() = _isLooping
+
     fun update(song: Song) {
         viewModelScope.launch {
             songRepo.update(song)
@@ -79,6 +83,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setSeekTo(progress: Int) {
         _seekToEvent.value = Event((progress))
+    }
+
+    fun setLooping(isLooping: Boolean) {
+        _isLooping.value = isLooping
     }
 
     fun updateDb() {
