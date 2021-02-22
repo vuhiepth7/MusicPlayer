@@ -55,6 +55,7 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         requestPermission(storagePermission)
         bindService()
         setupClickListeners()
+        observeData()
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
@@ -69,42 +70,6 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
                 }
             }
         }
-
-        viewModel.songChangeEvent.observe(this) {
-            it?.getContentIfNotHandled()?.let { id -> playerService.setSongId(id) }
-        }
-        viewModel.togglePlayPauseEvent.observe(this) {
-            it?.getContentIfNotHandled()?.let {
-                with(playerService) {
-                    viewModel.setIsPlaying(!isPlaying())
-                    if (isPlaying()) {
-                        pauseMedia()
-                        handler.removeCallbacks(updateSeekBarRunnable)
-                    } else {
-                        playMedia()
-                        handler.postDelayed(updateSeekBarRunnable, 0)
-                    }
-                }
-            }
-        }
-        viewModel.isPlaying.observe(this) { isPlaying ->
-            if (isPlaying) binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_pause, theme))
-            else binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_play, theme))
-        }
-        viewModel.currentSong.observe(this) {
-            binding.song = it
-            if (playerService.getSongId() != it.id) {
-                playerService.setSongId(it.id)
-                viewModel.setIsPlaying(!playerService.isPlaying())
-                viewModel.setLooping(false)
-                handler.postDelayed(updateSeekBarRunnable, 0)
-                binding.progressIndicator.max = it.duration.toInt()
-            }
-        }
-        viewModel.seekToEvent.observe(this) {
-            it.getContentIfNotHandled()?.let { progress -> playerService.seekTo(progress) }
-        }
-        viewModel.isLooping.observe(this) { playerService.setLooping(it) }
     }
 
     private fun requestPermission(appPermission: AppPermission) {
@@ -142,6 +107,51 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         binding.apply {
             playPause.setOnClickListener { viewModel.togglePlayPause() }
             miniPlayer.setOnClickListener { navController.navigate(R.id.nav_player) }
+        }
+    }
+
+    private fun observeData() {
+        viewModel.apply {
+            songChangeEvent.observe(this@MainActivity) {
+                it?.getContentIfNotHandled()?.let { id -> playerService.setSongId(id) }
+            }
+
+            togglePlayPauseEvent.observe(this@MainActivity) {
+                it?.getContentIfNotHandled()?.let {
+                    with(playerService) {
+                        viewModel.setIsPlaying(!isPlaying())
+                        if (isPlaying()) {
+                            pauseMedia()
+                            handler.removeCallbacks(updateSeekBarRunnable)
+                        } else {
+                            playMedia()
+                            handler.postDelayed(updateSeekBarRunnable, 0)
+                        }
+                    }
+                }
+            }
+
+            isPlaying.observe(this@MainActivity) { isPlaying ->
+                if (isPlaying) binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_pause, theme))
+                else binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_play, theme))
+            }
+
+            currentSong.observe(this@MainActivity) {
+                binding.song = it
+                if (playerService.getSongId() != it.id) {
+                    playerService.setSongId(it.id)
+                    viewModel.setIsPlaying(!playerService.isPlaying())
+                    viewModel.setLooping(false)
+                    handler.postDelayed(updateSeekBarRunnable, 0)
+                    binding.progressIndicator.max = it.duration.toInt()
+                }
+            }
+
+            seekToEvent.observe(this@MainActivity) {
+                it.getContentIfNotHandled()?.let { progress -> playerService.seekTo(progress) }
+            }
+
+            isLooping.observe(this@MainActivity) { playerService.setLooping(it) }
         }
     }
 

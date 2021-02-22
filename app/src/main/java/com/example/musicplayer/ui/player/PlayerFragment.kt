@@ -37,52 +37,19 @@ class PlayerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.lifecycleOwner = viewLifecycleOwner
         setupClickListeners()
-        viewModel.songs.observe(viewLifecycleOwner) {
-            songs = it
-            initViewPager()
-        }
-        viewModel.currentSong.observe(viewLifecycleOwner) {
-            it?.let {
-                binding.apply {
-                    song = it
-                    endTimestamp.text = getMinutesSeconds(it.duration)
-                    seekBar.max = it.duration.toInt()
-                    viewPager.currentItem = viewModel.currentSongIndex.value ?: 0
-                }
-            }
-        }
-        viewModel.isPlaying.observe(viewLifecycleOwner) { isPlaying ->
-            if (isPlaying) binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_pause, requireActivity().theme))
-            else binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_play, requireActivity().theme))
-        }
-        viewModel.currentProgress.observe(viewLifecycleOwner) {
-            binding.seekBar.progress = it
-            binding.currentTimestamp.text = getMinutesSeconds(it.toLong())
-        }
-
-        viewModel.isLooping.observe(viewLifecycleOwner) { binding.repeat.isChecked = it }
-    }
-
-    private fun getMinutesSeconds(duration: Long): String {
-        return String.format(
-            "%02d:%02d",
-            TimeUnit.MILLISECONDS.toMinutes(duration),
-            TimeUnit.MILLISECONDS.toSeconds(duration) % 60
-        )
+        observeData()
     }
 
     private fun setupClickListeners() {
         binding.apply {
             chevronDown.setOnClickListener { findNavController().navigateUp() }
-            favorite.setOnCheckedChangeListener { btn, _ ->
-                viewModel.update(viewModel.currentSong.value?.copy(favorite = btn.isChecked)!!)
-            }
-            repeat.setOnCheckedChangeListener { btn, _ ->
-                viewModel.setLooping(btn.isChecked)
-            }
             skipNext.setOnClickListener { viewModel.skipNext() }
             skipPrevious.setOnClickListener { viewModel.skipPrevious() }
             playPause.setOnClickListener { viewModel.togglePlayPause() }
+            repeat.setOnCheckedChangeListener { btn, _ -> viewModel.setLooping(btn.isChecked) }
+            favorite.setOnCheckedChangeListener { btn, _ ->
+                viewModel.update(viewModel.currentSong.value?.copy(favorite = btn.isChecked)!!)
+            }
             seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {}
                 override fun onStartTrackingTouch(p0: SeekBar?) {}
@@ -91,6 +58,46 @@ class PlayerFragment : Fragment() {
                 }
             })
         }
+    }
+
+    private fun observeData() {
+        viewModel.apply {
+            songs.observe(viewLifecycleOwner) {
+                this@PlayerFragment.songs = it
+                initViewPager()
+            }
+
+            currentSong.observe(viewLifecycleOwner) {
+                it?.let {
+                    binding.apply {
+                        song = it
+                        endTimestamp.text = getMinutesSeconds(it.duration)
+                        seekBar.max = it.duration.toInt()
+                        viewPager.currentItem = viewModel.currentSongIndex.value ?: 0
+                    }
+                }
+            }
+
+            isPlaying.observe(viewLifecycleOwner) { isPlaying ->
+                if (isPlaying) binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_pause, requireActivity().theme))
+                else binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_play, requireActivity().theme))
+            }
+
+            currentProgress.observe(viewLifecycleOwner) {
+                binding.seekBar.progress = it
+                binding.currentTimestamp.text = getMinutesSeconds(it.toLong())
+            }
+
+            isLooping.observe(viewLifecycleOwner) { binding.repeat.isChecked = it }
+        }
+    }
+
+    private fun getMinutesSeconds(duration: Long): String {
+        return String.format(
+            "%02d:%02d",
+            TimeUnit.MILLISECONDS.toMinutes(duration),
+            TimeUnit.MILLISECONDS.toSeconds(duration) % 60
+        )
     }
 
     private fun initViewPager() {
