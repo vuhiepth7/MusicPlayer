@@ -16,6 +16,10 @@ interface PlaylistDao {
     @Query("SELECT * FROM playlist")
     fun getPlaylistsWithSongs(): LiveData<List<PlaylistWithSongs>>
 
+    @Transaction
+    @Query("SELECT * FROM playlist WHERE playlistId == :playlistId")
+    fun getSongsFromPlaylist(playlistId: Long): LiveData<List<PlaylistWithSongs>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun create(playlist: Playlist)
 

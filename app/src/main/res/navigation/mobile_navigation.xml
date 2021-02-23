@@ -11,11 +11,24 @@
     <fragment
         android:id="@+id/nav_library"
         android:name="com.example.musicplayer.ui.library.LibraryFragment"
-        android:label="@string/title_library" />
+        android:label="@string/title_library" >
+        <action
+            android:id="@+id/action_nav_library_to_nav_playlist"
+            app:destination="@id/nav_playlist" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_player"
         android:name="com.example.musicplayer.ui.player.PlayerFragment"
         android:label="PlayerFragment" />
+
+    <fragment
+        android:id="@+id/nav_playlist"
+        android:name="com.example.musicplayer.ui.playlist.PlaylistFragment"
+        android:label="PlaylistFragment" >
+        <argument
+            android:name="playlistId"
+            app:argType="long" />
+    </fragment>
 
 </navigation>

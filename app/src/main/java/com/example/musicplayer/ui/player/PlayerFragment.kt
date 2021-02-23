@@ -62,7 +62,7 @@ class PlayerFragment : Fragment() {
 
     private fun observeData() {
         viewModel.apply {
-            songs.observe(viewLifecycleOwner) {
+            currentQueue.observe(viewLifecycleOwner) {
                 this@PlayerFragment.songs = it
                 initViewPager()
             }

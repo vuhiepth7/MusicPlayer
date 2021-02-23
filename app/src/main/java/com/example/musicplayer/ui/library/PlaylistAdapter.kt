@@ -5,11 +5,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.musicplayer.data.model.Playlist
+import com.example.musicplayer.data.model.PlaylistWithSongs
 import com.example.musicplayer.databinding.ItemPlaylistBinding
 
 class PlaylistAdapter(private val listener: PlaylistListener) :
-    ListAdapter<Playlist, PlaylistAdapter.PlaylistViewHolder>(PlaylistDiffCallback()) {
+    ListAdapter<PlaylistWithSongs, PlaylistAdapter.PlaylistViewHolder>(PlaylistDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaylistViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
@@ -24,20 +24,21 @@ class PlaylistAdapter(private val listener: PlaylistListener) :
     }
 
     class PlaylistViewHolder(private val binding: ItemPlaylistBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: Playlist) {
+        fun bind(item: PlaylistWithSongs) {
             binding.apply {
-                playlist = item
+                playlist = item.playlist
+                songs.text = "${item.songs.size} songs"
                 executePendingBindings()
             }
         }
     }
 
-    class PlaylistDiffCallback : DiffUtil.ItemCallback<Playlist>() {
-        override fun areItemsTheSame(oldItem: Playlist, newItem: Playlist): Boolean {
-            return oldItem.playlistId == newItem.playlistId
+    class PlaylistDiffCallback : DiffUtil.ItemCallback<PlaylistWithSongs>() {
+        override fun areItemsTheSame(oldItem: PlaylistWithSongs, newItem: PlaylistWithSongs): Boolean {
+            return oldItem.playlist.playlistId == newItem.playlist.playlistId
         }
 
-        override fun areContentsTheSame(oldItem: Playlist, newItem: Playlist): Boolean {
+        override fun areContentsTheSame(oldItem: PlaylistWithSongs, newItem: PlaylistWithSongs): Boolean {
             return oldItem == newItem
         }
     }

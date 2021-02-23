@@ -17,6 +17,10 @@ class PlaylistRepository(private val playlistDao: PlaylistDao){
         return playlistDao.getPlaylistsWithSongs()
     }
 
+    fun getSongsFromPlaylist(playlistId: Long): LiveData<List<PlaylistWithSongs>> {
+        return playlistDao.getSongsFromPlaylist(playlistId)
+    }
+
     suspend fun create(playlist: Playlist) {
         playlistDao.create(playlist)
     }

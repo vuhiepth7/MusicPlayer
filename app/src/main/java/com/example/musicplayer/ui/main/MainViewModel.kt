@@ -5,6 +5,7 @@ import androidx.lifecycle.*
 import com.example.musicplayer.ServiceLocator
 import com.example.musicplayer.data.model.Playlist
 import com.example.musicplayer.data.model.PlaylistSongCrossRef
+import com.example.musicplayer.data.model.PlaylistWithSongs
 import com.example.musicplayer.data.model.Song
 import com.example.musicplayer.utils.Event
 import kotlinx.coroutines.launch
@@ -15,13 +16,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val playlistRepo = ServiceLocator.providePlaylistRepository(application)
 
     val songs = songRepo.getAll()
-    val playlists = playlistRepo.getPlaylists()
+    val playlists = playlistRepo.getPlaylistsWithSongs()
+
+    private val _currentQueue = MutableLiveData<List<Song>>()
+    val currentQueue: LiveData<List<Song>>
+        get() = _currentQueue
 
     private val _currentSongIndex = MutableLiveData<Int>()
     val currentSongIndex: LiveData<Int>
         get() = _currentSongIndex
 
-    val currentSong: LiveData<Song> = _currentSongIndex.map { songs.value?.get(it)!! }
+    val currentSong: LiveData<Song> = _currentSongIndex.map { _currentQueue.value?.get(it)!! }
 
     private val _isPlaying = MutableLiveData<Boolean>()
     val isPlaying: LiveData<Boolean>
@@ -53,12 +58,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun getSongsFromPlaylist(playlistId: Long): LiveData<List<Song>> {
+        return playlistRepo.getSongsFromPlaylist(playlistId).map { it.first().songs }
+    }
+
     fun setCurrentSongIndex(index: Int) {
         _currentSongIndex.value = index
     }
 
+    fun setCurrentQueue(songs: List<Song>) {
+        _currentQueue.value = songs
+    }
+
     fun skipNext(): Boolean {
-        return if (_currentSongIndex.value!! < songs.value?.size!! - 1) {
+        return if (_currentSongIndex.value!! < _currentQueue.value?.size!! - 1) {
             _currentSongIndex.value = currentSongIndex.value?.plus(1)
             _songChangeEvent.value = Event(currentSong.value?.songId ?: 0)
             true
