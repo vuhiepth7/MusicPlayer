@@ -82,7 +82,10 @@ class PlaylistFragment : Fragment() {
     }
 
     private fun showEditPlaylistDialog() {
-        val input = EditText(requireContext()).apply { inputType = InputType.TYPE_CLASS_TEXT }
+        val input = EditText(requireContext()).apply {
+            inputType = InputType.TYPE_CLASS_TEXT
+            setText(args.playlistName)
+        }
         AlertDialog.Builder(requireContext()).apply {
             setTitle("Playlist name")
             setView(input)

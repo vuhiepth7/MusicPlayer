@@ -66,7 +66,8 @@ class LibraryFragment : Fragment() {
         playlistAdapter = PlaylistAdapter(object : PlaylistAdapter.PlaylistListener {
             override fun onPlaylistClicked(position: Int) {
                 val action = LibraryFragmentDirections.actionNavLibraryToNavPlaylist(
-                    playlistAdapter.currentList[position].playlist.playlistId
+                    playlistAdapter.currentList[position].playlist.playlistId,
+                    playlistAdapter.currentList[position].playlist.name
                 )
                 findNavController().navigate(action)
             }
