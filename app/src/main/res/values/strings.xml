@@ -11,4 +11,6 @@
     <string name="sample_songs">12 songs</string>
     <string name="sample_playlist">Latest Hits</string>
     <string name="add_playlist">Add playlist</string>
+    <string name="title_player">Player</string>
+    <string name="title_playlist">Playlist</string>
 </resources>

@@ -20,6 +20,8 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.musicplayer.R
 import com.example.musicplayer.data.local.AppPreferences
@@ -51,6 +53,9 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
 
         navController = findNavController(R.id.nav_host_fragment)
         binding.bottomNavView.setupWithNavController(navController)
+
+        val appBarConfiguration = AppBarConfiguration(setOf(R.id.nav_home, R.id.nav_library, R.id.nav_player))
+        setupActionBarWithNavController(navController, appBarConfiguration)
 
         requestPermission(storagePermission)
         bindService()
@@ -227,6 +232,10 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp() || super.onSupportNavigateUp()
     }
 
     override fun onRestart() {

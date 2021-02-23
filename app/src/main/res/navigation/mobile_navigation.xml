@@ -20,12 +20,12 @@
     <fragment
         android:id="@+id/nav_player"
         android:name="com.example.musicplayer.ui.player.PlayerFragment"
-        android:label="PlayerFragment" />
+        android:label="@string/title_player" />
 
     <fragment
         android:id="@+id/nav_playlist"
         android:name="com.example.musicplayer.ui.playlist.PlaylistFragment"
-        android:label="PlaylistFragment" >
+        android:label="@string/title_playlist" >
         <argument
             android:name="playlistId"
             app:argType="long" />
