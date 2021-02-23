@@ -95,6 +95,20 @@ class PlaylistFragment : Fragment() {
         }
     }
 
+    private fun showConfirmDeletePlaylistDialog() {
+        AlertDialog.Builder(requireContext()).apply {
+            setTitle("Are you sure you want to delete?")
+            setNegativeButton("Yes") { _, _ -> deletePlaylist() }
+            setPositiveButton("No") { dialog, _ -> dialog.cancel() }
+            show()
+        }
+    }
+
+    private fun deletePlaylist() {
+        viewModel.deletePlaylist(args.playlistId)
+        findNavController().navigateUp()
+    }
+
     private fun updatePlaylist(playlistName: String) {
         if (playlistName.isNotBlank() && playlistName.isNotEmpty()) {
             viewModel.updatePlaylist(Playlist(args.playlistId, playlistName))
@@ -112,8 +126,7 @@ class PlaylistFragment : Fragment() {
                 true
             }
             R.id.delete -> {
-                viewModel.deletePlaylist(args.playlistId)
-                findNavController().navigateUp()
+                showConfirmDeletePlaylistDialog()
                 true
             }
             else -> false
