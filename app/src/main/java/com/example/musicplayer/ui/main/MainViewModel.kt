@@ -135,4 +135,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             playlistRepo.insertPlaylistSong(playlistSong)
         }
     }
+
+    fun deleteSongFromPlaylist(playlistSong: PlaylistSongCrossRef) {
+        viewModelScope.launch {
+            playlistRepo.deletePlaylistSong(playlistSong)
+        }
+    }
 }

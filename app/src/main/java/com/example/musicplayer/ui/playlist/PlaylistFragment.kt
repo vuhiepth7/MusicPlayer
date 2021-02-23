@@ -5,6 +5,7 @@ import android.text.InputType
 import android.util.Log
 import android.view.*
 import android.widget.EditText
+import android.widget.PopupMenu
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -12,6 +13,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.musicplayer.R
 import com.example.musicplayer.data.model.Playlist
+import com.example.musicplayer.data.model.PlaylistSongCrossRef
 import com.example.musicplayer.databinding.FragmentPlaylistBinding
 import com.example.musicplayer.ui.main.MainViewModel
 import com.example.musicplayer.ui.main.SongAdapter
@@ -55,8 +57,28 @@ class PlaylistFragment : Fragment() {
             override fun setSongFavorite(position: Int, isFavorite: Boolean) {
                 viewModel.update(songAdapter.currentList[position].copy(favorite = isFavorite))
             }
+
+            override fun onLongClicked(view: View, position: Int) {
+                showSongMenu(view, position)
+            }
         })
         binding.songRv.adapter = songAdapter
+    }
+
+    private fun showSongMenu(view: View, position: Int) {
+        PopupMenu(requireContext(), view).apply {
+            inflate(R.menu.remove_from_playlist_menu)
+            setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.remove -> {
+                        viewModel.deleteSongFromPlaylist(PlaylistSongCrossRef(args.playlistId, songAdapter.currentList[position].songId))
+                        true
+                    }
+                    else -> false
+                }
+            }
+            show()
+        }
     }
 
     private fun showEditPlaylistDialog() {

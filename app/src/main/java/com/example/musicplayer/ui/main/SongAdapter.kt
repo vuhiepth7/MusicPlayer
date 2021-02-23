@@ -1,6 +1,7 @@
 package com.example.musicplayer.ui.main
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -15,9 +16,15 @@ class SongAdapter(private val listener: SongListener) :
         val layoutInflater = LayoutInflater.from(parent.context)
         val binding = ItemSongBinding.inflate(layoutInflater, parent, false)
         val songViewHolder = SongViewHolder(binding)
-        binding.root.setOnClickListener { listener.onSongClicked(songViewHolder.adapterPosition) }
-        binding.favorite.setOnCheckedChangeListener { button, _ ->
-            listener.setSongFavorite(songViewHolder.adapterPosition, button.isChecked)
+        binding.apply {
+            root.setOnClickListener { listener.onSongClicked(songViewHolder.adapterPosition) }
+            root.setOnLongClickListener {
+                listener.onLongClicked(thumbnail, songViewHolder.adapterPosition)
+                true
+            }
+            favorite.setOnCheckedChangeListener { button, _ ->
+                listener.setSongFavorite(songViewHolder.adapterPosition, button.isChecked)
+            }
         }
         return songViewHolder
     }
@@ -49,5 +56,6 @@ class SongAdapter(private val listener: SongListener) :
     interface SongListener {
         fun onSongClicked(position: Int)
         fun setSongFavorite(position: Int, isFavorite: Boolean)
+        fun onLongClicked(view: View, position: Int)
     }
 }

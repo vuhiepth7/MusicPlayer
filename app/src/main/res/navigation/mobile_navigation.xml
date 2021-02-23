@@ -7,7 +7,11 @@
     <fragment
         android:id="@+id/nav_home"
         android:name="com.example.musicplayer.ui.home.HomeFragment"
-        android:label="@string/title_home" />
+        android:label="@string/title_home" >
+        <action
+            android:id="@+id/action_nav_home_to_selectPlaylistDialogFragment"
+            app:destination="@id/selectPlaylistDialogFragment" />
+    </fragment>
     <fragment
         android:id="@+id/nav_library"
         android:name="com.example.musicplayer.ui.library.LibraryFragment"
@@ -30,5 +34,13 @@
             android:name="playlistId"
             app:argType="long" />
     </fragment>
+    <dialog
+        android:id="@+id/selectPlaylistDialogFragment"
+        android:name="com.example.musicplayer.ui.playlist.SelectPlaylistDialogFragment"
+        android:label="SelectPlaylistDialogFragment" >
+        <argument
+            android:name="songId"
+            app:argType="long" />
+    </dialog>
 
 </navigation>

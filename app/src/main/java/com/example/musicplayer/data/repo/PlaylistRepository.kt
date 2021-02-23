@@ -31,10 +31,15 @@ class PlaylistRepository(private val playlistDao: PlaylistDao){
 
     suspend fun delete(playlistId: Long) {
         playlistDao.delete(playlistId)
+        playlistDao.deletePlaylistSong(playlistId)
     }
 
     suspend fun insertPlaylistSong(playlistSongCrossRef: PlaylistSongCrossRef) {
         playlistDao.insertPlaylistSong(playlistSongCrossRef)
+    }
+
+    suspend fun deletePlaylistSong(playlistSongCrossRef: PlaylistSongCrossRef) {
+        playlistDao.deletePlaylistSong(playlistSongCrossRef)
     }
 
 }

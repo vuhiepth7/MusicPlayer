@@ -5,13 +5,16 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.musicplayer.R
+import com.example.musicplayer.data.model.PlaylistSongCrossRef
 import com.example.musicplayer.data.model.Song
 import com.example.musicplayer.databinding.FragmentHomeBinding
+import com.example.musicplayer.ui.library.PlaylistAdapter
 import com.example.musicplayer.ui.main.MainViewModel
 import com.example.musicplayer.ui.main.SongAdapter
 
@@ -46,8 +49,29 @@ class HomeFragment : Fragment() {
             override fun setSongFavorite(position: Int, isFavorite: Boolean) {
                 viewModel.update(songAdapter.currentList[position].copy(favorite = isFavorite))
             }
+
+            override fun onLongClicked(view: View, position: Int) {
+                showSongMenu(view, position)
+            }
         })
         binding.songRv.adapter = songAdapter
+    }
+
+    private fun showSongMenu(view: View, position: Int) {
+        PopupMenu(requireContext(), view).apply {
+            inflate(R.menu.add_to_playlist_menu)
+            setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.add -> {
+                        val action = HomeFragmentDirections.actionNavHomeToSelectPlaylistDialogFragment(songAdapter.currentList[position].songId)
+                        findNavController().navigate(action)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            show()
+        }
     }
 
     private fun observeData() {
