@@ -1,14 +1,17 @@
 package com.example.musicplayer.ui.playlist
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.text.InputType
+import android.util.Log
+import android.view.*
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.musicplayer.R
+import com.example.musicplayer.data.model.Playlist
 import com.example.musicplayer.databinding.FragmentPlaylistBinding
 import com.example.musicplayer.ui.main.MainViewModel
 import com.example.musicplayer.ui.main.SongAdapter
@@ -24,6 +27,7 @@ class PlaylistFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentPlaylistBinding.inflate(inflater, container, false)
+        setHasOptionsMenu(true)
         return binding.root
     }
 
@@ -53,5 +57,41 @@ class PlaylistFragment : Fragment() {
             }
         })
         binding.songRv.adapter = songAdapter
+    }
+
+    private fun showEditPlaylistDialog() {
+        val input = EditText(requireContext()).apply { inputType = InputType.TYPE_CLASS_TEXT }
+        AlertDialog.Builder(requireContext()).apply {
+            setTitle("Playlist name")
+            setView(input)
+            setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+            setPositiveButton("Ok") { _, _ -> updatePlaylist(input.text.toString()) }
+            show()
+        }
+    }
+
+    private fun updatePlaylist(playlistName: String) {
+        if (playlistName.isNotBlank() && playlistName.isNotEmpty()) {
+            viewModel.updatePlaylist(Playlist(args.playlistId, playlistName))
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.playlist_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.edit -> {
+                showEditPlaylistDialog()
+                true
+            }
+            R.id.delete -> {
+                viewModel.deletePlaylist(args.playlistId)
+                findNavController().navigateUp()
+                true
+            }
+            else -> false
+        }
     }
 }

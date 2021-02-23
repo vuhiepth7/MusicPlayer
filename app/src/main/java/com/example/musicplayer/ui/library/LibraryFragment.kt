@@ -35,7 +35,6 @@ class LibraryFragment : Fragment() {
         observeData()
         initPlaylistAdapter()
         binding.fab.setOnClickListener {
-            Log.e("Library", "onCLick")
             showCreatePlaylistDialog()
         }
     }
@@ -52,7 +51,6 @@ class LibraryFragment : Fragment() {
     }
 
     private fun createPlaylist(playlistName: String) {
-        Log.e("Library", playlistName)
         if (playlistName.isNotBlank() && playlistName.isNotEmpty()) {
             viewModel.createPlaylist(Playlist(name = playlistName))
         }

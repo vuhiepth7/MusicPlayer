@@ -118,6 +118,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun updatePlaylist(playlist: Playlist) {
+        viewModelScope.launch {
+            playlistRepo.create(playlist)
+        }
+    }
+
+    fun deletePlaylist(playlistId: Long) {
+        viewModelScope.launch {
+            playlistRepo.delete(playlistId)
+        }
+    }
+
     fun addSongToPlaylist(playlistSong: PlaylistSongCrossRef) {
         viewModelScope.launch {
             playlistRepo.insertPlaylistSong(playlistSong)

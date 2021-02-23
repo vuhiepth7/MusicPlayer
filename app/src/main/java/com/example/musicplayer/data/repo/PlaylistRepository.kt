@@ -25,6 +25,14 @@ class PlaylistRepository(private val playlistDao: PlaylistDao){
         playlistDao.create(playlist)
     }
 
+    suspend fun update(playlist: Playlist) {
+        playlistDao.update(playlist)
+    }
+
+    suspend fun delete(playlistId: Long) {
+        playlistDao.delete(playlistId)
+    }
+
     suspend fun insertPlaylistSong(playlistSongCrossRef: PlaylistSongCrossRef) {
         playlistDao.insertPlaylistSong(playlistSongCrossRef)
     }
