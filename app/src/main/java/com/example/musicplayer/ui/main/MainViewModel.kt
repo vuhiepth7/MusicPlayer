@@ -120,7 +120,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun updatePlaylist(playlist: Playlist) {
         viewModelScope.launch {
-            playlistRepo.create(playlist)
+            playlistRepo.update(playlist)
         }
     }
 

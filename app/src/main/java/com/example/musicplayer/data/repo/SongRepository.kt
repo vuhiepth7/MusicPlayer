@@ -6,30 +6,31 @@ import com.example.musicplayer.data.local.ContentResolverHelper
 import com.example.musicplayer.data.local.db.SongDao
 import com.example.musicplayer.data.model.Song
 
-class SongRepository(private val songDao: SongDao, private val contentResolver: ContentResolverHelper) {
+class SongRepository(private val songDao: SongDao, private val contentResolver: ContentResolverHelper) :
+    ISongRepository {
 
 
-    fun getAll(): LiveData<List<Song>> {
+    override fun getAll(): LiveData<List<Song>> {
         return songDao.getAll()
     }
 
-    suspend fun insertAll(songs: List<Song>) {
+    override suspend fun insertAll(songs: List<Song>) {
         songDao.insertAll(songs)
     }
 
-    suspend fun update(song: Song) {
+    override suspend fun update(song: Song) {
         songDao.update(song)
     }
 
-    suspend fun delete(song: Song) {
+    override suspend fun delete(song: Song) {
         songDao.delete(song)
     }
 
-    suspend fun deleteAll(songs: List<Song>) {
+    override suspend fun deleteAll(songs: List<Song>) {
         songDao.deleteAll(songs)
     }
 
-    suspend fun updateDb() {
+    override suspend fun updateDb() {
         songDao.insertAll(contentResolver.getAll())
     }
 }

@@ -6,39 +6,39 @@ import com.example.musicplayer.data.model.Playlist
 import com.example.musicplayer.data.model.PlaylistSongCrossRef
 import com.example.musicplayer.data.model.PlaylistWithSongs
 
-class PlaylistRepository(private val playlistDao: PlaylistDao){
+class PlaylistRepository(private val playlistDao: PlaylistDao) : IPlaylistRepository {
 
 
-    fun getPlaylists(): LiveData<List<Playlist>> {
+    override fun getPlaylists(): LiveData<List<Playlist>> {
         return playlistDao.getPlaylists()
     }
 
-    fun getPlaylistsWithSongs(): LiveData<List<PlaylistWithSongs>> {
+    override fun getPlaylistsWithSongs(): LiveData<List<PlaylistWithSongs>> {
         return playlistDao.getPlaylistsWithSongs()
     }
 
-    fun getSongsFromPlaylist(playlistId: Long): LiveData<List<PlaylistWithSongs>> {
+    override fun getSongsFromPlaylist(playlistId: Long): LiveData<List<PlaylistWithSongs>> {
         return playlistDao.getSongsFromPlaylist(playlistId)
     }
 
-    suspend fun create(playlist: Playlist) {
+    override suspend fun create(playlist: Playlist) {
         playlistDao.create(playlist)
     }
 
-    suspend fun update(playlist: Playlist) {
+    override suspend fun update(playlist: Playlist) {
         playlistDao.update(playlist)
     }
 
-    suspend fun delete(playlistId: Long) {
+    override suspend fun delete(playlistId: Long) {
         playlistDao.delete(playlistId)
         playlistDao.deletePlaylistSong(playlistId)
     }
 
-    suspend fun insertPlaylistSong(playlistSongCrossRef: PlaylistSongCrossRef) {
+    override suspend fun insertPlaylistSong(playlistSongCrossRef: PlaylistSongCrossRef) {
         playlistDao.insertPlaylistSong(playlistSongCrossRef)
     }
 
-    suspend fun deletePlaylistSong(playlistSongCrossRef: PlaylistSongCrossRef) {
+    override suspend fun deletePlaylistSong(playlistSongCrossRef: PlaylistSongCrossRef) {
         playlistDao.deletePlaylistSong(playlistSongCrossRef)
     }
 

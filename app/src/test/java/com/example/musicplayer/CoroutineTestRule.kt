@@ -1,4 +1,4 @@
-package com.example.musicplayer.ui
+package com.example.musicplayer
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
