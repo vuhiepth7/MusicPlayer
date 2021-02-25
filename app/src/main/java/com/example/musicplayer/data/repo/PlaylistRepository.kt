@@ -8,7 +8,6 @@ import com.example.musicplayer.data.model.PlaylistWithSongs
 
 class PlaylistRepository(private val playlistDao: PlaylistDao) : IPlaylistRepository {
 
-
     override fun getPlaylists(): LiveData<List<Playlist>> {
         return playlistDao.getPlaylists()
     }

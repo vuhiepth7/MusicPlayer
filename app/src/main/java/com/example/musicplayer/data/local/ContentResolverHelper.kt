@@ -6,11 +6,11 @@ import android.net.Uri
 import android.provider.MediaStore
 import com.example.musicplayer.data.model.Song
 
-class ContentResolverHelper(context: Context) {
+class ContentResolverHelper(context: Context) : IContentResolverHelper {
 
-    private val contentResolver = context.contentResolver
+    override val contentResolver = context.contentResolver
 
-    fun getAll(): List<Song> {
+    override fun getAll(): List<Song> {
         val songs = mutableListOf<Song>()
         val projections = arrayOf(
             MediaStore.Audio.Media._ID,

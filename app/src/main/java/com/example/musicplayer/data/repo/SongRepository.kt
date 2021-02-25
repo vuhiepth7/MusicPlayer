@@ -1,14 +1,15 @@
 package com.example.musicplayer.data.repo
 
-import android.util.Log
 import androidx.lifecycle.LiveData
-import com.example.musicplayer.data.local.ContentResolverHelper
+import com.example.musicplayer.data.local.IContentResolverHelper
 import com.example.musicplayer.data.local.db.SongDao
 import com.example.musicplayer.data.model.Song
 
-class SongRepository(private val songDao: SongDao, private val contentResolver: ContentResolverHelper) :
+class SongRepository(
+    private val songDao: SongDao,
+    private val contentResolver: IContentResolverHelper
+) :
     ISongRepository {
-
 
     override fun getAll(): LiveData<List<Song>> {
         return songDao.getAll()
