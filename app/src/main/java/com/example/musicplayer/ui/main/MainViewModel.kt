@@ -32,10 +32,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val isPlaying: LiveData<Boolean>
         get() = _isPlaying
 
-    private val _songChangeEvent = MutableLiveData<Event<Long>>()
-    val songChangeEvent: LiveData<Event<Long>>
-        get() = _songChangeEvent
-
     private val _togglePlayPauseEvent = MutableLiveData<Event<Unit>>()
     val togglePlayPauseEvent: LiveData<Event<Unit>>
         get() = _togglePlayPauseEvent
@@ -73,7 +69,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun skipNext(): Boolean {
         return if (_currentSongIndex.value!! < _currentQueue.value?.size!! - 1) {
             _currentSongIndex.value = currentSongIndex.value?.plus(1)
-            _songChangeEvent.value = Event(currentSong.value?.songId ?: 0)
             true
         } else false
     }
@@ -81,7 +76,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun skipPrevious(): Boolean {
         return if (_currentSongIndex.value!! > 0) {
             _currentSongIndex.value = currentSongIndex.value?.minus(1)
-            _songChangeEvent.value = Event(currentSong.value?.songId ?: 0)
             true
         } else false
     }

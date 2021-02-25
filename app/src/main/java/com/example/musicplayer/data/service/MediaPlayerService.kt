@@ -1,16 +1,26 @@
 package com.example.musicplayer.data.service
 
+import android.app.PendingIntent
 import android.app.Service
 import android.content.*
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.provider.MediaStore
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import com.example.musicplayer.R
+import com.example.musicplayer.data.model.Song
+import com.example.musicplayer.data.receiver.NotificationBroadcastReceiver
+import com.example.musicplayer.utils.NotificationUtils
+
 
 class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
     AudioManager.OnAudioFocusChangeListener {
@@ -19,16 +29,23 @@ class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
     private lateinit var audioManager: AudioManager
     private val iBinder = LocalBinder()
     private lateinit var callback: MediaPlayerCallback
-    private var currentSongId: Long? = null
+    private val mediaBroadcastReceiver by lazy { MediaBroadcastReceiver() }
+    private var currentSong: Song? = null
 
     override fun onBind(intent: Intent?): IBinder {
         if (!requestAudioFocus()) stopSelf()
         initMediaPlayer()
+        registerReceiver()
         return iBinder
     }
 
     fun registerCallback(mediaPlayerCallback: MediaPlayerCallback) {
         callback = mediaPlayerCallback
+    }
+
+    private fun registerReceiver() {
+        val intentFilter = IntentFilter(MEDIA_INTENT_FILTER)
+        registerReceiver(mediaBroadcastReceiver, intentFilter)
     }
 
     private fun initMediaPlayer() {
@@ -45,30 +62,36 @@ class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
         }
     }
 
-    fun setSongId(id: Long) {
-        currentSongId = id
+    private fun startNotification(song: Song?) {
+        song?.let {
+            val notification = NotificationUtils.createNotification(this, it, isPlaying())
+            startForeground(1, notification)
+        }
+    }
+
+    fun setSong(song: Song) {
+        startNotification(song)
+        currentSong = song
         mediaPlayer.apply {
             reset()
             setDataSource(
                 applicationContext,
-                ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id)
+                ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.songId)
             )
             prepareAsync()
         }
     }
 
-    fun getSongId() = currentSongId
+    fun getSong() = currentSong
 
     fun playMedia() {
         if (!isPlaying()) mediaPlayer.start()
+        startNotification(currentSong)
     }
 
     fun pauseMedia() {
         if (isPlaying()) mediaPlayer.pause()
-    }
-
-    fun reset(id: Long) {
-        setSongId(id)
+        startNotification(currentSong)
     }
 
     fun seekTo(position: Int) {
@@ -136,14 +159,38 @@ class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
         super.onDestroy()
         mediaPlayer.stop()
         mediaPlayer.release()
+        unregisterReceiver(mediaBroadcastReceiver)
         removeAudioFocus()
+    }
+
+    companion object {
+        const val NOTIFICATION_CHANNEL_NAME = "Playback"
+        const val NOTIFICATION_CHANNEL_ID = "10"
+
+        const val MEDIA_INTENT_FILTER = "com.example.musicplayer.MEDIA_INTENT_FILTER"
+        const val ACTION_PLAY_PAUSE = "com.example.musicplayer.ACTION_PLAY_PAUSE"
+        const val ACTION_SKIP_NEXT = "com.example.musicplayer.ACTION_SKIP_NEXT"
+        const val ACTION_SKIP_PREVIOUS = "com.example.musicplayer.ACTION_SKIP_PREVIOUS"
     }
 
     inner class LocalBinder : Binder() {
         fun getService() = this@MediaPlayerService
     }
 
+    inner class MediaBroadcastReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.getStringExtra("action")) {
+                ACTION_PLAY_PAUSE -> callback.onMediaPlayPause()
+                ACTION_SKIP_NEXT -> callback.onMediaSkipNext()
+                ACTION_SKIP_PREVIOUS -> callback.onMediaSkipPrevious()
+            }
+        }
+    }
+
     interface MediaPlayerCallback {
         fun onCompletion()
+        fun onMediaPlayPause()
+        fun onMediaSkipNext()
+        fun onMediaSkipPrevious()
     }
 }

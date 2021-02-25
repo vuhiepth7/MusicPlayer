@@ -1,16 +1,13 @@
 package com.example.musicplayer.ui.main
 
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.*
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Bundle
-import android.os.Handler
-import android.os.IBinder
-import android.os.Looper
+import android.os.*
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -18,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -61,6 +59,7 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         bindService()
         setupClickListeners()
         observeData()
+        createNotificationChannel()
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
@@ -117,11 +116,7 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
 
     private fun observeData() {
         viewModel.apply {
-            songChangeEvent.observe(this@MainActivity) {
-                it?.getContentIfNotHandled()?.let { id -> playerService.setSongId(id) }
-            }
-
-            togglePlayPauseEvent.observe(this@MainActivity) {
+            togglePlayPauseEvent.observeForever {
                 it?.getContentIfNotHandled()?.let {
                     with(playerService) {
                         viewModel.setIsPlaying(!isPlaying())
@@ -141,10 +136,10 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
                 else binding.playPause.setImageDrawable(resources.getDrawable(R.drawable.ic_play, theme))
             }
 
-            currentSong.observe(this@MainActivity) {
+            currentSong.observeForever {
                 binding.song = it
-                if (playerService.getSongId() != it.songId) {
-                    playerService.setSongId(it.songId)
+                if (playerService.getSong()?.songId != it.songId) {
+                    playerService.setSong(it)
                     viewModel.setIsPlaying(!playerService.isPlaying())
                     viewModel.setLooping(false)
                     handler.postDelayed(updateSeekBarRunnable, 0)
@@ -211,10 +206,35 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                MediaPlayerService.NOTIFICATION_CHANNEL_ID,
+                MediaPlayerService.NOTIFICATION_CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_LOW
+            )
+            (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+                .createNotificationChannel(channel)
+        }
+    }
+
     override fun onCompletion() {
         if (!viewModel.skipNext()) {
             viewModel.setIsPlaying(false)
         }
+    }
+
+    override fun onMediaPlayPause() {
+        Log.e("MainActivity", "onMediaPlayPause")
+        viewModel.togglePlayPause()
+    }
+
+    override fun onMediaSkipNext() {
+        viewModel.skipNext()
+    }
+
+    override fun onMediaSkipPrevious() {
+        viewModel.skipPrevious()
     }
 
     override fun onRequestPermissionsResult(
