@@ -66,18 +66,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _currentQueue.value = songs
     }
 
-    fun skipNext(): Boolean {
-        return if (_currentSongIndex.value!! < _currentQueue.value?.size!! - 1) {
-            _currentSongIndex.value = currentSongIndex.value?.plus(1)
-            true
-        } else false
+    fun skipNext(): Boolean? {
+        return _currentSongIndex.value?.let {
+             if (it < _currentQueue.value?.size?.minus(1) ?: 0) {
+                 _currentSongIndex.value = currentSongIndex.value?.plus(1)
+                 true
+             } else false
+        }
     }
 
-    fun skipPrevious(): Boolean {
-        return if (_currentSongIndex.value!! > 0) {
-            _currentSongIndex.value = currentSongIndex.value?.minus(1)
-            true
-        } else false
+    fun skipPrevious(): Boolean? {
+        return _currentSongIndex.value?.let {
+            if (it > 0) {
+                _currentSongIndex.value = currentSongIndex.value?.minus(1)
+                true
+            } else false
+        }
     }
 
     fun togglePlayPause() {

@@ -219,13 +219,12 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
     }
 
     override fun onCompletion() {
-        if (!viewModel.skipNext()) {
+        if (viewModel.skipNext() == false) {
             viewModel.setIsPlaying(false)
         }
     }
 
     override fun onMediaPlayPause() {
-        Log.e("MainActivity", "onMediaPlayPause")
         viewModel.togglePlayPause()
     }
 
