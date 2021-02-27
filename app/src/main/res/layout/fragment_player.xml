@@ -119,12 +119,13 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
-            <androidx.appcompat.widget.AppCompatImageView
+            <com.google.android.material.checkbox.MaterialCheckBox
                 android:id="@+id/shuffle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:padding="@dimen/keyline_3"
+                android:layout_width="@dimen/keyline_4"
+                android:layout_height="@dimen/keyline_4"
+                android:layout_margin="@dimen/keyline_3"
+                android:background="@drawable/shuffle_checked"
+                android:button="@null"
                 app:srcCompat="@drawable/ic_shuffle" />
 
             <androidx.appcompat.widget.AppCompatImageView

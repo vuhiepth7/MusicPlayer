@@ -22,6 +22,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val currentQueue: LiveData<List<Song>>
         get() = _currentQueue
 
+    private val _currentSongsList = MutableLiveData<List<Song>>()
+    val currentSongsList: LiveData<List<Song>>
+        get() = _currentSongsList
+
     private val _currentSongIndex = MutableLiveData<Int>()
     val currentSongIndex: LiveData<Int>
         get() = _currentSongIndex
@@ -48,6 +52,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val isLooping: LiveData<Boolean>
         get() = _isLooping
 
+    private val _shuffle = MutableLiveData<Boolean>()
+    val shuffle: LiveData<Boolean>
+        get() = _shuffle
+
     fun update(song: Song) {
         viewModelScope.launch {
             songRepo.update(song)
@@ -64,6 +72,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setCurrentQueue(songs: List<Song>) {
         _currentQueue.value = songs
+    }
+
+    fun setCurrentSongsList(songs: List<Song>) {
+        _currentSongsList.value = songs
     }
 
     fun skipNext(): Boolean? {
@@ -102,6 +114,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setLooping(isLooping: Boolean) {
         _isLooping.value = isLooping
+    }
+
+    fun setShuffle(shuffle: Boolean) {
+        _shuffle.value = shuffle
     }
 
     fun updateDb() {

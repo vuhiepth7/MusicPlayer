@@ -50,6 +50,7 @@ class PlayerFragment : Fragment() {
             favorite.setOnCheckedChangeListener { btn, _ ->
                 viewModel.update(viewModel.currentSong.value?.copy(favorite = btn.isChecked)!!)
             }
+            shuffle.setOnCheckedChangeListener { btn, _ -> viewModel.setShuffle(btn.isChecked) }
             seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {}
                 override fun onStartTrackingTouch(p0: SeekBar?) {}
@@ -63,6 +64,7 @@ class PlayerFragment : Fragment() {
     private fun observeData() {
         viewModel.apply {
             currentQueue.observe(viewLifecycleOwner) {
+                if (!binding.shuffle.isChecked) viewModel.setCurrentSongsList(it)
                 this@PlayerFragment.songs = it
                 initViewPager()
             }
@@ -89,6 +91,20 @@ class PlayerFragment : Fragment() {
             }
 
             isLooping.observe(viewLifecycleOwner) { binding.repeat.isChecked = it }
+
+            shuffle.observe(viewLifecycleOwner) {
+                if (it) {
+                    val list = this@PlayerFragment.songs.toMutableList()
+                    val current = list.removeAt(viewModel.currentSongIndex.value!!)
+                    list.shuffle()
+                    list.add(0, current)
+                    setCurrentQueue(list)
+                    setCurrentSongIndex(0)
+                } else {
+                    setCurrentQueue(currentSongsList.value!!)
+                    setCurrentSongIndex(this@PlayerFragment.songs.indexOf(currentSong.value))
+                }
+            }
         }
     }
 
