@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -37,7 +38,7 @@ object NotificationUtils {
                     )
                 }
             } catch (e: Exception) {
-                null
+                BitmapFactory.decodeResource(context.resources, R.drawable.ic_album_placeholder)
             }
             val mediaMetaData = MediaMetadataCompat.Builder()
                 .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, -1)

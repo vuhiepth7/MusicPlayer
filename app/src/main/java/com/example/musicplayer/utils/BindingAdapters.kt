@@ -13,7 +13,7 @@ fun ImageView.loadImage(url: String?) {
     url?.let {
         Glide.with(this.context)
             .load(it)
-            .placeholder(R.drawable.image_placeholder)
+            .placeholder(R.drawable.ic_album_placeholder)
             .transition(DrawableTransitionOptions.withCrossFade())
             .into(this)
     }
