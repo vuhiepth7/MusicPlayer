@@ -37,13 +37,7 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
     private lateinit var playerService: MediaPlayerService
     private var isBound = false
     private val handler = Handler(Looper.getMainLooper())
-    private val updateSeekBarRunnable = object : Runnable {
-        override fun run() {
-            viewModel.setCurrentProgress(playerService.currentPosition())
-            binding.progressIndicator.progress = playerService.currentPosition()
-            handler.postDelayed(this, 1000)
-        }
-    }
+    private lateinit var updateSeekBarRunnable: Runnable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +52,7 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         requestPermission(storagePermission)
         bindService()
         setupClickListeners()
+        setupSeekBarRunnable()
         observeData()
         createNotificationChannel()
 
@@ -111,6 +106,16 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         binding.apply {
             playPause.setOnClickListener { viewModel.togglePlayPause() }
             miniPlayer.setOnClickListener { navController.navigate(R.id.nav_player) }
+        }
+    }
+
+    private fun setupSeekBarRunnable() {
+        updateSeekBarRunnable = object : Runnable {
+            override fun run() {
+                viewModel.setCurrentProgress(playerService.currentPosition())
+                binding.progressIndicator.progress = playerService.currentPosition()
+                handler.postDelayed(this, 1000)
+            }
         }
     }
 
