@@ -19,8 +19,8 @@ class ContentResolverHelper(context: Context) : IContentResolverHelper {
             MediaStore.Audio.Media.ALBUM_ID,
             MediaStore.Audio.Media.DURATION
         )
-        val selection = "${MediaStore.Audio.Media.TITLE} != ?"
-        val selectionArgs = arrayOf("\"\"")
+        val selection = "${MediaStore.Audio.Media.IS_MUSIC} == ?"
+        val selectionArgs = arrayOf("1")
         val cursor = contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             projections,
