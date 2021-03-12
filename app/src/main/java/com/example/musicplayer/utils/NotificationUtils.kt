@@ -4,6 +4,8 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -20,10 +22,23 @@ object NotificationUtils {
     fun createNotification(context: Context, song: Song, isPlaying: Boolean): Notification? {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val mediaSessionCompat = MediaSessionCompat(context, "tag")
-            val artwork = MediaStore.Images.Media.getBitmap(
-                context.contentResolver,
-                Uri.parse(song.thumbnailUri)
-            )
+            val bitmap = try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    val source =
+                        ImageDecoder.createSource(
+                            context.contentResolver,
+                            Uri.parse(song.thumbnailUri)
+                        )
+                    ImageDecoder.decodeBitmap(source)
+                } else {
+                    MediaStore.Images.Media.getBitmap(
+                        context.contentResolver,
+                        Uri.parse(song.thumbnailUri)
+                    )
+                }
+            } catch (e: Exception) {
+                null
+            }
             val mediaMetaData = MediaMetadataCompat.Builder()
                 .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, -1)
                 .build()
@@ -42,7 +57,7 @@ object NotificationUtils {
 
             return NotificationCompat.Builder(context, MediaPlayerService.NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_play)
-                .setLargeIcon(artwork)
+                .setLargeIcon(bitmap)
                 .setContentTitle(song.title)
                 .setContentText(song.artist)
                 .setOnlyAlertOnce(true)
