@@ -154,14 +154,14 @@ class ViewModelTest {
     }
 
     @Test
-    fun updateDb() {
+    fun updateDb() = runBlockingTest {
         viewModel.updateDb()
         val songs = viewModel.songs.getOrAwaitValue()
         Assert.assertEquals(songRepository.getAll().value, songs)
     }
 
     @Test
-    fun createPlaylist() {
+    fun createPlaylist() = runBlockingTest {
         val newPlaylist = Playlist(5, "Playlist 5")
         viewModel.createPlaylist(newPlaylist)
         val playlist = playlistRepository.getPlaylists().getOrAwaitValue().first { it.playlistId == newPlaylist.playlistId }
@@ -169,7 +169,7 @@ class ViewModelTest {
     }
 
     @Test
-    fun updatePlaylist() {
+    fun updatePlaylist() = runBlockingTest {
         val newPlaylist = Playlist(2, "New Playlist")
         viewModel.updatePlaylist(newPlaylist)
         val playlist = playlistRepository.getPlaylists().getOrAwaitValue().first { it.playlistId == newPlaylist.playlistId }
@@ -177,14 +177,14 @@ class ViewModelTest {
     }
 
     @Test
-    fun deletePlaylist() {
+    fun deletePlaylist() = runBlockingTest {
         viewModel.deletePlaylist(2)
         val contains = playlistRepository.getPlaylists().getOrAwaitValue().find { it.playlistId == 2L }
         Assert.assertEquals(null, contains)
     }
 
     @Test
-    fun addSongToPlaylist() {
+    fun addSongToPlaylist() = runBlockingTest {
         val playlistSong = PlaylistSongCrossRef(1, 2)
         viewModel.addSongToPlaylist(playlistSong)
         val playlistWithSongs = playlistRepository.getSongsFromPlaylist(1).getOrAwaitValue().first().songs.find { it.songId == 2L }
@@ -192,7 +192,7 @@ class ViewModelTest {
     }
 
     @Test
-    fun deleteSongFromPlaylist() {
+    fun deleteSongFromPlaylist() = runBlockingTest {
         val playlistSong = PlaylistSongCrossRef(1, 2)
         viewModel.deleteSongFromPlaylist(playlistSong)
         val playlistWithSongs = playlistRepository.getSongsFromPlaylist(1).getOrAwaitValue().first().songs.find { it.songId == 2L }
