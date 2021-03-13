@@ -2,6 +2,7 @@ package com.example.musicplayer.ui.player
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -93,6 +94,7 @@ class PlayerFragment : Fragment() {
             isLooping.observe(viewLifecycleOwner) { binding.repeat.isChecked = it }
 
             shuffle.observe(viewLifecycleOwner) {
+                binding.shuffle.isChecked = it
                 if (it) {
                     val list = this@PlayerFragment.songs.toMutableList()
                     val current = list.removeAt(viewModel.currentSongIndex.value!!)
@@ -101,8 +103,8 @@ class PlayerFragment : Fragment() {
                     setCurrentQueue(list)
                     setCurrentSongIndex(0)
                 } else {
+                    setCurrentSongIndex(currentSongsList.value?.indexOf(currentSong.value) ?: 0)
                     setCurrentQueue(currentSongsList.value!!)
-                    setCurrentSongIndex(this@PlayerFragment.songs.indexOf(currentSong.value))
                 }
             }
         }
