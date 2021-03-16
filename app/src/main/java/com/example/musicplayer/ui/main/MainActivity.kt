@@ -241,6 +241,11 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         viewModel.skipPrevious()
     }
 
+    override fun onMediaStop() {
+        viewModel.setIsPlaying(false)
+        playerService.pauseMedia()
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {

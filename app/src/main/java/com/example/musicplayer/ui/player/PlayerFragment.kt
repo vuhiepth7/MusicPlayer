@@ -44,6 +44,10 @@ class PlayerFragment : Fragment() {
     private fun setupClickListeners() {
         binding.apply {
             chevronDown.setOnClickListener { findNavController().navigateUp() }
+            sleepTimer.setOnClickListener {
+                val dialog = SleepTimerDialogFragment()
+                dialog.show(parentFragmentManager, dialog.tag)
+            }
             skipNext.setOnClickListener { viewModel.skipNext() }
             skipPrevious.setOnClickListener { viewModel.skipPrevious() }
             playPause.setOnClickListener { viewModel.togglePlayPause() }

@@ -171,6 +171,7 @@ class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
         const val ACTION_PLAY_PAUSE = "com.example.musicplayer.ACTION_PLAY_PAUSE"
         const val ACTION_SKIP_NEXT = "com.example.musicplayer.ACTION_SKIP_NEXT"
         const val ACTION_SKIP_PREVIOUS = "com.example.musicplayer.ACTION_SKIP_PREVIOUS"
+        const val ACTION_STOP = "com.example.musicplayer.ACTION_STOP"
     }
 
     inner class LocalBinder : Binder() {
@@ -183,6 +184,7 @@ class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
                 ACTION_PLAY_PAUSE -> callback.onMediaPlayPause()
                 ACTION_SKIP_NEXT -> callback.onMediaSkipNext()
                 ACTION_SKIP_PREVIOUS -> callback.onMediaSkipPrevious()
+                ACTION_STOP -> callback.onMediaStop()
             }
         }
     }
@@ -192,5 +194,6 @@ class MediaPlayerService : Service(), MediaPlayer.OnErrorListener,
         fun onMediaPlayPause()
         fun onMediaSkipNext()
         fun onMediaSkipPrevious()
+        fun onMediaStop()
     }
 }
