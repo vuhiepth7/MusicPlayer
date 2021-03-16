@@ -1,11 +1,13 @@
 package com.example.musicplayer.ui.main
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.musicplayer.R
 import com.example.musicplayer.databinding.ItemSongBinding
 import com.example.musicplayer.data.model.Song
 

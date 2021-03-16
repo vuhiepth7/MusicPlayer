@@ -11,5 +11,6 @@ data class Song(
     @ColumnInfo val artist: String,
     @ColumnInfo val thumbnailUri: String,
     @ColumnInfo val duration: Long,
-    @ColumnInfo val favorite: Boolean = false
+    @ColumnInfo val favorite: Boolean = false,
+    @ColumnInfo val playing: Boolean = false
 )

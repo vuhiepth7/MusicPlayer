@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:text="@{song.title}"
             app:layout_constraintBottom_toTopOf="@id/artist"
-            app:layout_constraintEnd_toStartOf="@id/favorite"
+            app:layout_constraintEnd_toStartOf="@id/playing"
             app:layout_constraintStart_toEndOf="@+id/thumbnail"
             app:layout_constraintTop_toTopOf="@+id/thumbnail"
             app:layout_constraintVertical_chainStyle="packed"
@@ -46,10 +46,22 @@
             android:layout_height="wrap_content"
             android:text="@{song.artist}"
             app:layout_constraintBottom_toBottomOf="@+id/thumbnail"
-            app:layout_constraintEnd_toStartOf="@id/favorite"
+            app:layout_constraintEnd_toStartOf="@id/playing"
             app:layout_constraintStart_toEndOf="@+id/thumbnail"
             app:layout_constraintTop_toBottomOf="@+id/title"
             tools:text="@string/sample_artist" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/playing"
+            visibleIf="@{song.playing}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/keyline_3"
+            android:background="@drawable/ic_volume"
+            android:backgroundTint="?colorPrimary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/favorite"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/favorite"

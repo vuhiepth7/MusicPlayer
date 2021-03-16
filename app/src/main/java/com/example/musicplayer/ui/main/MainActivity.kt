@@ -143,8 +143,10 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
 
             currentSong.observeForever {
                 binding.song = it
+                playerService.getSong()?.let { song -> viewModel.update(song.copy(playing = false)) }
                 if (playerService.getSong()?.songId != it.songId) {
                     playerService.setSong(it)
+                    viewModel.update(it.copy(playing = true))
                     viewModel.setIsPlaying(!playerService.isPlaying())
                     viewModel.setLooping(false)
                     handler.postDelayed(updateSeekBarRunnable, 0)
@@ -270,10 +272,12 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
     override fun onRestart() {
         super.onRestart()
         handler.postDelayed(updateSeekBarRunnable, 0)
+        viewModel.currentSong.value?.copy(playing = true)?.let { viewModel.update(it) }
     }
 
     override fun onPause() {
         super.onPause()
+        viewModel.currentSong.value?.copy(playing = false)?.let { viewModel.update(it) }
         handler.removeCallbacks(updateSeekBarRunnable)
     }
 }
