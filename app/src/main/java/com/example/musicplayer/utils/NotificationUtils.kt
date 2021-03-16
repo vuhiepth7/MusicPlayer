@@ -17,6 +17,7 @@ import com.example.musicplayer.R
 import com.example.musicplayer.data.model.Song
 import com.example.musicplayer.data.receiver.NotificationBroadcastReceiver
 import com.example.musicplayer.data.service.MediaPlayerService
+import com.example.musicplayer.ui.main.MainActivity
 
 object NotificationUtils {
 
@@ -55,12 +56,15 @@ object NotificationUtils {
             val skipPreviousPendingIntent = getPendingIntent<NotificationBroadcastReceiver>(
                 context, 0, MediaPlayerService.ACTION_SKIP_PREVIOUS
             )
+            val intent = Intent(context, MainActivity::class.java)
+            val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
 
             return NotificationCompat.Builder(context, MediaPlayerService.NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_play)
                 .setLargeIcon(bitmap)
                 .setContentTitle(song.title)
                 .setContentText(song.artist)
+                .setContentIntent(pendingIntent)
                 .setOnlyAlertOnce(true)
                 .addAction(R.drawable.ic_skip_previous, "", skipPreviousPendingIntent)
                 .addAction(playPauseButton, "", playPausePendingIntent)
