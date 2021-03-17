@@ -14,6 +14,7 @@ import androidx.navigation.fragment.navArgs
 import com.example.musicplayer.R
 import com.example.musicplayer.data.model.Playlist
 import com.example.musicplayer.data.model.PlaylistSongCrossRef
+import com.example.musicplayer.data.model.PlaylistWithSongs
 import com.example.musicplayer.databinding.FragmentPlaylistBinding
 import com.example.musicplayer.ui.main.MainViewModel
 import com.example.musicplayer.ui.main.SongAdapter
@@ -36,13 +37,21 @@ class PlaylistFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.lifecycleOwner = viewLifecycleOwner
-        observeData()
         initPlaylistAdapter()
+        observeData()
     }
 
     private fun observeData() {
-        viewModel.getSongsFromPlaylist(args.playlistId).observe(viewLifecycleOwner) {
-            songAdapter.submitList(it)
+        if (args.playlistId == 0L) {
+            viewModel.songs.observe(viewLifecycleOwner) {
+                it?.filter { song -> song.favorite }?.let {
+                    songAdapter.submitList(it)
+                }
+            }
+        } else {
+            viewModel.getSongsFromPlaylist(args.playlistId).observe(viewLifecycleOwner) {
+                songAdapter.submitList(it)
+            }
         }
     }
 

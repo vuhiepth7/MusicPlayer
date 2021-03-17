@@ -2,7 +2,6 @@ package com.example.musicplayer.ui.library
 
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.musicplayer.data.model.Playlist
+import com.example.musicplayer.data.model.PlaylistWithSongs
 import com.example.musicplayer.databinding.FragmentLibraryBinding
 import com.example.musicplayer.ui.main.MainViewModel
 
@@ -58,7 +58,11 @@ class LibraryFragment : Fragment() {
 
     private fun observeData() {
         viewModel.playlists.observe(viewLifecycleOwner) {
-            playlistAdapter.submitList(it)
+            val list = it.toMutableList()
+            viewModel.songs.value?.filter { song -> song.favorite }?.let {
+                list.add(0, PlaylistWithSongs(Playlist(0, "Favorites"), it))
+            }
+            playlistAdapter.submitList(list)
         }
     }
 
