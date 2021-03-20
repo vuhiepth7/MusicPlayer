@@ -73,6 +73,7 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:26.7.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-messaging:21.0.1'
 
     testImplementation 'junit:junit:4.13.1'
     testImplementation "org.mockito:mockito-core:3.3.3"

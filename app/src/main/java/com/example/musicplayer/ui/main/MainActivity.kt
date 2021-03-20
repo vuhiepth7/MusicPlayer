@@ -23,10 +23,14 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.musicplayer.R
 import com.example.musicplayer.data.local.AppPreferences
+import com.example.musicplayer.data.service.FirebaseService.Companion.FIREBASE_INTENT_FILTER
 import com.example.musicplayer.data.service.MediaPlayerService
 import com.example.musicplayer.databinding.ActivityMainBinding
 import com.example.musicplayer.utils.AppPermission
 import com.example.musicplayer.utils.PermissionStatus
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.iid.FirebaseInstanceId
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback {
 
@@ -38,6 +42,8 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
     private var isBound = false
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var updateSeekBarRunnable: Runnable
+    private lateinit var localBroadcastManager: LocalBroadcastManager
+    private val messageReceiver by lazy { MessageReceiver() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,11 +52,11 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         navController = findNavController(R.id.nav_host_fragment)
         binding.bottomNavView.setupWithNavController(navController)
 
-        val appBarConfiguration = AppBarConfiguration(setOf(R.id.nav_home, R.id.nav_library, R.id.nav_player))
+        val appBarConfiguration =
+            AppBarConfiguration(setOf(R.id.nav_home, R.id.nav_library, R.id.nav_player))
         setupActionBarWithNavController(navController, appBarConfiguration)
 
         requestPermission(storagePermission)
-        bindService()
         setupClickListeners()
         setupSeekBarRunnable()
         observeData()
@@ -69,6 +75,25 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
                 }
             }
         }
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.d("MainActivity", "getInstanceId failed", task.exception)
+                return@OnCompleteListener
+            }
+            val token = task.result.toString()
+            Log.d("MainActivity", token)
+        })
+    }
+
+    override fun onStart() {
+        super.onStart()
+        bindService()
+        localBroadcastManager = LocalBroadcastManager.getInstance(this)
+        localBroadcastManager.registerReceiver(
+            messageReceiver,
+            IntentFilter(FIREBASE_INTENT_FILTER)
+        )
     }
 
     private fun requestPermission(appPermission: AppPermission) {
@@ -89,6 +114,7 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
                 val binder = service as MediaPlayerService.LocalBinder
                 playerService = binder.getService()
                 playerService.registerCallback(this@MainActivity)
+                handleFirebasePlayback(intent.getStringExtra("playback"))
                 isBound = true
             }
 
@@ -248,6 +274,18 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         playerService.pauseMedia()
     }
 
+    private fun handleFirebasePlayback(playback: String?) {
+        when (playback) {
+            "play" -> {
+                viewModel.setCurrentQueue(viewModel.songs.value!!)
+                viewModel.setCurrentSongIndex(0)
+            }
+            "play_pause" -> viewModel.togglePlayPause()
+            "next" -> viewModel.skipNext()
+            "previous" -> viewModel.skipPrevious()
+        }
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
@@ -275,10 +313,22 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         viewModel.currentSong.value?.copy(playing = true)?.let { viewModel.update(it) }
     }
 
+    override fun onStop() {
+        super.onStop()
+        localBroadcastManager.unregisterReceiver(messageReceiver)
+    }
+
     override fun onPause() {
         super.onPause()
         viewModel.currentSong.value?.copy(playing = false)?.let { viewModel.update(it) }
         handler.removeCallbacks(updateSeekBarRunnable)
+    }
+
+    inner class MessageReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent) {
+            handleFirebasePlayback(intent.getStringExtra("playback"))
+            Log.d("MainActivity", "MessageReceiver: ${intent.extras?.get("playback")}")
+        }
     }
 }
 
