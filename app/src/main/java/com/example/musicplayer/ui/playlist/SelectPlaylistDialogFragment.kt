@@ -12,11 +12,15 @@ import com.example.musicplayer.databinding.DialogFragmentSelectPlaylistBinding
 import com.example.musicplayer.ui.library.PlaylistAdapter
 import com.example.musicplayer.ui.main.MainViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 
 class SelectPlaylistDialogFragment : BottomSheetDialogFragment() {
 
     private lateinit var binding: DialogFragmentSelectPlaylistBinding
     private lateinit var playlistAdapter: PlaylistAdapter
+    private val firebaseAnalytics by lazy { Firebase.analytics }
     private val viewModel: MainViewModel by activityViewModels()
     private val args: SelectPlaylistDialogFragmentArgs by navArgs()
 
@@ -34,6 +38,14 @@ class SelectPlaylistDialogFragment : BottomSheetDialogFragment() {
         initPlaylistAdapter()
     }
 
+    override fun onResume() {
+        super.onResume()
+        val bundle = Bundle().apply {
+            putString(FirebaseAnalytics.Param.SCREEN_CLASS, "SelectPlaylistDialog")
+        }
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
+    }
+
     private fun observeData() {
         viewModel.playlists.observe(viewLifecycleOwner) {
             playlistAdapter.submitList(it)
@@ -43,6 +55,10 @@ class SelectPlaylistDialogFragment : BottomSheetDialogFragment() {
     private fun initPlaylistAdapter() {
         playlistAdapter = PlaylistAdapter(object : PlaylistAdapter.PlaylistListener {
             override fun onPlaylistClicked(position: Int) {
+                val bundle = Bundle().apply {
+                    putString("playlist_name", playlistAdapter.currentList[position].playlist.name)
+                }
+                firebaseAnalytics.logEvent("add_song_to_playlist", bundle)
                 viewModel.addSongToPlaylist(PlaylistSongCrossRef(playlistAdapter.currentList[position].playlist.playlistId, args.songId))
                 findNavController().navigateUp()
             }

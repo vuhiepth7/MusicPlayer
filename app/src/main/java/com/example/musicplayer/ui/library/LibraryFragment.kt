@@ -14,12 +14,16 @@ import com.example.musicplayer.data.model.Playlist
 import com.example.musicplayer.data.model.PlaylistWithSongs
 import com.example.musicplayer.databinding.FragmentLibraryBinding
 import com.example.musicplayer.ui.main.MainViewModel
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 
 
 class LibraryFragment : Fragment() {
 
     private lateinit var binding: FragmentLibraryBinding
     private lateinit var playlistAdapter: PlaylistAdapter
+    private val firebaseAnalytics by lazy { Firebase.analytics }
     private val viewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -39,6 +43,14 @@ class LibraryFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        val bundle = Bundle().apply {
+            putString(FirebaseAnalytics.Param.SCREEN_CLASS, "LibraryFragment")
+        }
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
+    }
+
     private fun showCreatePlaylistDialog() {
         val input = EditText(requireContext()).apply { inputType = InputType.TYPE_CLASS_TEXT }
         AlertDialog.Builder(requireContext()).apply {
@@ -52,6 +64,10 @@ class LibraryFragment : Fragment() {
 
     private fun createPlaylist(playlistName: String) {
         if (playlistName.isNotBlank() && playlistName.isNotEmpty()) {
+            val bundle = Bundle().apply {
+                putString("playlist_name", playlistName)
+            }
+            firebaseAnalytics.logEvent("create_playlist", bundle)
             viewModel.createPlaylist(Playlist(name = playlistName))
         }
     }
@@ -69,6 +85,10 @@ class LibraryFragment : Fragment() {
     private fun initPlaylistAdapter() {
         playlistAdapter = PlaylistAdapter(object : PlaylistAdapter.PlaylistListener {
             override fun onPlaylistClicked(position: Int) {
+                val bundle = Bundle().apply {
+                    putString("playlist_name", playlistAdapter.currentList[position].playlist.name)
+                }
+                firebaseAnalytics.logEvent("select_playlist", bundle)
                 val action = LibraryFragmentDirections.actionNavLibraryToNavPlaylist(
                     playlistAdapter.currentList[position].playlist.playlistId,
                     playlistAdapter.currentList[position].playlist.name

@@ -12,12 +12,16 @@ import android.view.ViewGroup
 import com.example.musicplayer.data.receiver.AlarmReceiver
 import com.example.musicplayer.databinding.DialogFragmentSleepTimerBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 
 class SleepTimerDialogFragment : BottomSheetDialogFragment() {
 
     private lateinit var binding: DialogFragmentSleepTimerBinding
     private lateinit var adapter: SleepTimerAdapter
     private lateinit var alarmManager: AlarmManager
+    private val firebaseAnalytics by lazy { Firebase.analytics }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -33,6 +37,13 @@ class SleepTimerDialogFragment : BottomSheetDialogFragment() {
         initPlaylistAdapter()
     }
 
+    override fun onResume() {
+        super.onResume()
+        val bundle = Bundle().apply {
+            putString(FirebaseAnalytics.Param.SCREEN_CLASS, "SleepTimerDialog")
+        }
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
+    }
 
     private fun initPlaylistAdapter() {
         adapter = SleepTimerAdapter(object : SleepTimerAdapter.SleepTimerListener {
@@ -54,6 +65,10 @@ class SleepTimerDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun setAlarm(sleepInterval: SleepInterval) {
+        val bundle = Bundle().apply {
+            putLong("interval", sleepInterval.timeInMillis)
+        }
+        firebaseAnalytics.logEvent("select_sleep_timer", bundle)
         val pendingIntent =
             PendingIntent.getBroadcast(
                 requireContext(), 0, Intent(
@@ -69,6 +84,7 @@ class SleepTimerDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun cancelAlarm() {
+        firebaseAnalytics.logEvent("cancel_sleep_timer", null)
         val pendingIntent =
             PendingIntent.getBroadcast(
                 requireContext(), 0, Intent(

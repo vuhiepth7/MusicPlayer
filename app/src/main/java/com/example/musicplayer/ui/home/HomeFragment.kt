@@ -17,11 +17,15 @@ import com.example.musicplayer.databinding.FragmentHomeBinding
 import com.example.musicplayer.ui.library.PlaylistAdapter
 import com.example.musicplayer.ui.main.MainViewModel
 import com.example.musicplayer.ui.main.SongAdapter
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 
 class HomeFragment : Fragment() {
 
     private lateinit var binding: FragmentHomeBinding
     private lateinit var songAdapter: SongAdapter
+    private val firebaseAnalytics by lazy { Firebase.analytics }
     private val viewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -38,19 +42,43 @@ class HomeFragment : Fragment() {
         observeData()
     }
 
+    override fun onResume() {
+        super.onResume()
+        val bundle = Bundle().apply {
+            putString(FirebaseAnalytics.Param.SCREEN_CLASS, "HomeFragment")
+        }
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
+    }
+
     private fun initSongAdapter() {
         songAdapter = SongAdapter(object : SongAdapter.SongListener {
             override fun onSongClicked(position: Int) {
+                val bundle = Bundle().apply {
+                    putString(FirebaseAnalytics.Param.SCREEN_NAME, "HomeFragment")
+                    putString("song_name", songAdapter.currentList[position].title)
+                }
+                firebaseAnalytics.logEvent("select_song", bundle)
                 viewModel.setCurrentQueue(songAdapter.currentList)
                 viewModel.setCurrentSongIndex(position)
                 findNavController().navigate(R.id.nav_player)
             }
 
             override fun setSongFavorite(position: Int, isFavorite: Boolean) {
+                val bundle = Bundle().apply {
+                    putString(FirebaseAnalytics.Param.SCREEN_NAME, "HomeFragment")
+                    putString("song_name", songAdapter.currentList[position].title)
+                    putBoolean("is_favorite", isFavorite)
+                }
+                firebaseAnalytics.logEvent("favorite", bundle)
                 viewModel.update(songAdapter.currentList[position].copy(favorite = isFavorite))
             }
 
             override fun onLongClicked(view: View, position: Int) {
+                val bundle = Bundle().apply {
+                    putString(FirebaseAnalytics.Param.SCREEN_NAME, "HomeFragment")
+                    putString("song_name", songAdapter.currentList[position].title)
+                }
+                firebaseAnalytics.logEvent("song_long_click", bundle)
                 showSongMenu(view, position)
             }
         })

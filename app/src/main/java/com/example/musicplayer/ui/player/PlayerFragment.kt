@@ -18,12 +18,16 @@ import com.example.musicplayer.data.model.Song
 import com.example.musicplayer.databinding.FragmentPlayerBinding
 import com.example.musicplayer.databinding.ItemSongImageBinding
 import com.example.musicplayer.ui.main.MainViewModel
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 import java.util.*
 import java.util.concurrent.TimeUnit
 
 class PlayerFragment : Fragment() {
 
     private lateinit var binding: FragmentPlayerBinding
+    private val firebaseAnalytics by lazy { Firebase.analytics }
     private val viewModel: MainViewModel by activityViewModels()
     private lateinit var songs: List<Song>
 
@@ -41,25 +45,77 @@ class PlayerFragment : Fragment() {
         observeData()
     }
 
+    override fun onResume() {
+        super.onResume()
+        val bundle = Bundle().apply {
+            putString(FirebaseAnalytics.Param.SCREEN_CLASS, "PlayerFragment")
+        }
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
+    }
+
     private fun setupClickListeners() {
         binding.apply {
-            chevronDown.setOnClickListener { findNavController().navigateUp() }
+            chevronDown.setOnClickListener {
+                firebaseAnalytics.logEvent("close_player", null)
+                findNavController().navigateUp()
+            }
             sleepTimer.setOnClickListener {
+                firebaseAnalytics.logEvent("sleep_dialog", null)
                 val dialog = SleepTimerDialogFragment()
                 dialog.show(parentFragmentManager, dialog.tag)
             }
-            skipNext.setOnClickListener { viewModel.skipNext() }
-            skipPrevious.setOnClickListener { viewModel.skipPrevious() }
-            playPause.setOnClickListener { viewModel.togglePlayPause() }
-            repeat.setOnCheckedChangeListener { btn, _ -> viewModel.setLooping(btn.isChecked) }
+            skipNext.setOnClickListener {
+                val bundle = Bundle().apply {
+                    putString(FirebaseAnalytics.Param.SCREEN_NAME, "PlayerFragment")
+                }
+                firebaseAnalytics.logEvent("skip_next", bundle)
+                viewModel.skipNext()
+            }
+            skipPrevious.setOnClickListener {
+                val bundle = Bundle().apply {
+                    putString(FirebaseAnalytics.Param.SCREEN_NAME, "PlayerFragment")
+                }
+                firebaseAnalytics.logEvent("skip_previous", bundle)
+                viewModel.skipPrevious()
+            }
+            playPause.setOnClickListener {
+                val bundle = Bundle().apply {
+                    putString(FirebaseAnalytics.Param.SCREEN_NAME, "PlayerFragment")
+                }
+                firebaseAnalytics.logEvent("play_pause", bundle)
+                viewModel.togglePlayPause()
+            }
+            repeat.setOnCheckedChangeListener { btn, _ ->
+                val bundle = Bundle().apply {
+                    putBoolean("is_repeat", btn.isChecked)
+                }
+                firebaseAnalytics.logEvent("repeat", bundle)
+                viewModel.setLooping(btn.isChecked)
+            }
             favorite.setOnCheckedChangeListener { btn, _ ->
+                val bundle = Bundle().apply {
+                    putString(FirebaseAnalytics.Param.SCREEN_NAME, "HomeFragment")
+                    putString("song_name", viewModel.currentSong.value?.title)
+                    putBoolean("is_favorite", btn.isChecked)
+                }
+                firebaseAnalytics.logEvent("favorite", bundle)
                 viewModel.update(viewModel.currentSong.value?.copy(favorite = btn.isChecked)!!)
             }
-            shuffle.setOnCheckedChangeListener { btn, _ -> viewModel.setShuffle(btn.isChecked) }
+            shuffle.setOnCheckedChangeListener { btn, _ ->
+                val bundle = Bundle().apply {
+                    putBoolean("is_shuffle", btn.isChecked)
+                }
+                firebaseAnalytics.logEvent("shuffle", bundle)
+                viewModel.setShuffle(btn.isChecked)
+            }
             seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {}
                 override fun onStartTrackingTouch(p0: SeekBar?) {}
                 override fun onStopTrackingTouch(p0: SeekBar?) {
+                    val bundle = Bundle().apply {
+                        putInt("progress", seekBar.progress)
+                    }
+                    firebaseAnalytics.logEvent("seek", bundle)
                     viewModel.setSeekTo(seekBar.progress)
                 }
             })

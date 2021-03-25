@@ -9,6 +9,8 @@ object AppPreferences {
     private lateinit var preferences: SharedPreferences
 
     private val FIRST_TIME_ASKING = Pair("FIRST_TIME_ASKING", true)
+    private val FCM_PLAYBACK_ENABLED = Pair("FCM_PLAYBACK_ENABLED", false)
+
 
     fun init(context: Context) {
         preferences = context.getSharedPreferences(NAME, MODE)
@@ -24,5 +26,11 @@ object AppPreferences {
         get() = preferences.getBoolean(FIRST_TIME_ASKING.first, FIRST_TIME_ASKING.second)
         set(value) = preferences.edit {
             it.putBoolean(FIRST_TIME_ASKING.first, value)
+        }
+
+    var isFcmPlaybackEnabled: Boolean
+        get() = preferences.getBoolean(FCM_PLAYBACK_ENABLED.first, FCM_PLAYBACK_ENABLED.second)
+        set(value) = preferences.edit {
+            it.putBoolean(FCM_PLAYBACK_ENABLED.first, value)
         }
 }

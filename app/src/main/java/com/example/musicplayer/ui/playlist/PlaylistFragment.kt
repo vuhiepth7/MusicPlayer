@@ -18,11 +18,15 @@ import com.example.musicplayer.data.model.PlaylistWithSongs
 import com.example.musicplayer.databinding.FragmentPlaylistBinding
 import com.example.musicplayer.ui.main.MainViewModel
 import com.example.musicplayer.ui.main.SongAdapter
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 
 class PlaylistFragment : Fragment() {
 
     private lateinit var binding: FragmentPlaylistBinding
     private lateinit var songAdapter: SongAdapter
+    private val firebaseAnalytics by lazy { Firebase.analytics }
     private val viewModel: MainViewModel by activityViewModels()
     private val args: PlaylistFragmentArgs by navArgs()
 
@@ -39,6 +43,14 @@ class PlaylistFragment : Fragment() {
         binding.lifecycleOwner = viewLifecycleOwner
         initPlaylistAdapter()
         observeData()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val bundle = Bundle().apply {
+            putString(FirebaseAnalytics.Param.SCREEN_CLASS, "PlaylistFragment")
+        }
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
     }
 
     private fun observeData() {
@@ -58,16 +70,32 @@ class PlaylistFragment : Fragment() {
     private fun initPlaylistAdapter() {
         songAdapter = SongAdapter(object : SongAdapter.SongListener {
             override fun onSongClicked(position: Int) {
+                val bundle = Bundle().apply {
+                    putString(FirebaseAnalytics.Param.SCREEN_NAME, "PlaylistFragment")
+                    putString("song_name", songAdapter.currentList[position].title)
+                }
+                firebaseAnalytics.logEvent("select_song", bundle)
                 viewModel.setCurrentQueue(songAdapter.currentList)
                 viewModel.setCurrentSongIndex(position)
                 findNavController().navigate(R.id.nav_player)
             }
 
             override fun setSongFavorite(position: Int, isFavorite: Boolean) {
+                val bundle = Bundle().apply {
+                    putString(FirebaseAnalytics.Param.SCREEN_NAME, "PlaylistFragment")
+                    putString("song_name", songAdapter.currentList[position].title)
+                    putBoolean("is_favorite", isFavorite)
+                }
+                firebaseAnalytics.logEvent("favorite", bundle)
                 viewModel.update(songAdapter.currentList[position].copy(favorite = isFavorite))
             }
 
             override fun onLongClicked(view: View, position: Int) {
+                val bundle = Bundle().apply {
+                    putString(FirebaseAnalytics.Param.SCREEN_NAME, "PlaylistFragment")
+                    putString("song_name", songAdapter.currentList[position].title)
+                }
+                firebaseAnalytics.logEvent("song_long_click", bundle)
                 showSongMenu(view, position)
             }
         })
@@ -80,6 +108,10 @@ class PlaylistFragment : Fragment() {
             setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.remove -> {
+                        val bundle = Bundle().apply {
+                            putString("song_name", songAdapter.currentList[position].title)
+                        }
+                        firebaseAnalytics.logEvent("remove_song", bundle)
                         viewModel.deleteSongFromPlaylist(PlaylistSongCrossRef(args.playlistId, songAdapter.currentList[position].songId))
                         true
                     }
@@ -114,12 +146,20 @@ class PlaylistFragment : Fragment() {
     }
 
     private fun deletePlaylist() {
+        val bundle = Bundle().apply {
+            putString("playlist_name", args.playlistName)
+        }
+        firebaseAnalytics.logEvent("delete_playlist", bundle)
         viewModel.deletePlaylist(args.playlistId)
         findNavController().navigateUp()
     }
 
     private fun updatePlaylist(playlistName: String) {
         if (playlistName.isNotBlank() && playlistName.isNotEmpty()) {
+            val bundle = Bundle().apply {
+                putString("playlist_name", playlistName)
+            }
+            firebaseAnalytics.logEvent("update_playlist", bundle)
             viewModel.updatePlaylist(Playlist(args.playlistId, playlistName))
         }
     }

@@ -24,8 +24,8 @@ class SongAdapter(private val listener: SongListener) :
                 listener.onLongClicked(thumbnail, songViewHolder.adapterPosition)
                 true
             }
-            favorite.setOnCheckedChangeListener { button, _ ->
-                listener.setSongFavorite(songViewHolder.adapterPosition, button.isChecked)
+            favorite.setOnClickListener {
+                listener.setSongFavorite(songViewHolder.adapterPosition, favorite.isChecked)
             }
         }
         return songViewHolder

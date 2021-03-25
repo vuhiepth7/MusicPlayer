@@ -9,15 +9,20 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.musicplayer.R
+import com.example.musicplayer.data.local.AppPreferences
 import com.example.musicplayer.ui.main.MainActivity
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.google.firebase.remoteconfig.ktx.remoteConfig
 
 
 class FirebaseService : FirebaseMessagingService() {
 
     private val TAG = "FirebaseService"
     private lateinit var localBroadcastManager: LocalBroadcastManager
+    private val remoteConfig by lazy { Firebase.remoteConfig }
 
     override fun onCreate() {
         super.onCreate()
@@ -33,14 +38,16 @@ class FirebaseService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         Log.d(TAG, remoteMessage.data["playback"].toString())
-        val intent = Intent(FIREBASE_INTENT_FILTER).apply {
-            putExtra("playback", remoteMessage.data["playback"])
-        }
-        localBroadcastManager.sendBroadcast(intent)
-        if (!isAppOnForeground(this)) {
-            val notification = createNotification(remoteMessage)
-            val notificationManager = getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.notify(0, notification)
+        if (remoteConfig.getBoolean("fcm_playback_enabled")) {
+            val intent = Intent(FIREBASE_INTENT_FILTER).apply {
+                putExtra("playback", remoteMessage.data["playback"])
+            }
+            localBroadcastManager.sendBroadcast(intent)
+            if (!isAppOnForeground(this)) {
+                val notification = createNotification(remoteMessage)
+                val notificationManager = getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager
+                notificationManager.notify(0, notification)
+            }
         }
     }
 

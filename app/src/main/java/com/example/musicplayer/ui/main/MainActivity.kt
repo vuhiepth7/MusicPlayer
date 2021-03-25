@@ -29,8 +29,14 @@ import com.example.musicplayer.databinding.ActivityMainBinding
 import com.example.musicplayer.utils.AppPermission
 import com.example.musicplayer.utils.PermissionStatus
 import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.iid.FirebaseInstanceId
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
+import com.google.firebase.remoteconfig.ktx.remoteConfig
+import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 
 class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback {
 
@@ -44,6 +50,8 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
     private lateinit var updateSeekBarRunnable: Runnable
     private lateinit var localBroadcastManager: LocalBroadcastManager
     private val messageReceiver by lazy { MessageReceiver() }
+    private val firebaseAnalytics by lazy { Firebase.analytics }
+    private val remoteConfig by lazy { Firebase.remoteConfig }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +59,18 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
 
         navController = findNavController(R.id.nav_host_fragment)
         binding.bottomNavView.setupWithNavController(navController)
+        val configSettings = remoteConfigSettings {
+            minimumFetchIntervalInSeconds = 60
+        }
+        remoteConfig.setConfigSettingsAsync(configSettings)
+        remoteConfig.fetchAndActivate().addOnCompleteListener(this) { task ->
+            if (task.isSuccessful) {
+                AppPreferences.isFcmPlaybackEnabled = remoteConfig.getBoolean("fcm_playback_enabled")
+                Log.d("MainActivity", "RemoteConfig: Success - ${remoteConfig.getBoolean("fcm_playback_enabled")}")
+            } else {
+                Log.d("MainActivity", "RemoteConfig: Error")
+            }
+        }
 
         val appBarConfiguration =
             AppBarConfiguration(setOf(R.id.nav_home, R.id.nav_library, R.id.nav_player))
@@ -96,6 +116,14 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
         )
     }
 
+    override fun onResume() {
+        super.onResume()
+        val bundle = Bundle().apply {
+            putString(FirebaseAnalytics.Param.SCREEN_CLASS, "MainActivity")
+        }
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
+    }
+
     private fun requestPermission(appPermission: AppPermission) {
         when (permissionStatus(appPermission)) {
             PermissionStatus.GRANTED -> viewModel.updateDb()
@@ -130,8 +158,14 @@ class MainActivity : AppCompatActivity(), MediaPlayerService.MediaPlayerCallback
 
     private fun setupClickListeners() {
         binding.apply {
-            playPause.setOnClickListener { viewModel.togglePlayPause() }
-            miniPlayer.setOnClickListener { navController.navigate(R.id.nav_player) }
+            playPause.setOnClickListener {
+                firebaseAnalytics.logEvent("play_pause_mini_player", null)
+                viewModel.togglePlayPause()
+            }
+            miniPlayer.setOnClickListener {
+                firebaseAnalytics.logEvent("mini_player", null)
+                navController.navigate(R.id.nav_player)
+            }
         }
     }
 
