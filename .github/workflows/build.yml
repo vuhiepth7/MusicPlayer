@@ -27,6 +27,14 @@ jobs:
           keyStorePassword: ${{secrets.KEY_STORE_PASSWORD}}
           keyPassword: ${{secrets.KEY_PASSWORD}}
         
+      - uses: 8398a7/action-slack@v3.9.0
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
+        
       - name: Upload Apk
         uses: actions/upload-artifact@v2.2.2
         with:
