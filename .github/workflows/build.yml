@@ -17,11 +17,21 @@ jobs:
       - name: Build
         run: ./gradlew build
         
+      - uses: r0adkll/sign-android-release@v1.0.4
+        name: Sign app APK
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{secrets.SIGNING_KEY}}
+          alias: ${{secrets.ALIAS}}
+          keyStorePassword: ${{secrets.KEY_STORE_PASSWORD}}
+          keyPassword: ${{secrets.KEY_PASSWORD}}
+        
       - name: Upload Apk
         uses: actions/upload-artifact@v2.2.2
         with:
           name: app
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: ${{steps.sign_app.outputs.signedReleaseFile}}
           
       - name: Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.3.2
@@ -29,4 +39,4 @@ jobs:
           appId: ${{secrets.FIREBASE_APP_ID}}
           token: ${{secrets.FIREBASE_TOKEN}}
           groups: Android
-          file: app/build/outputs/apk/debug/app-debug.apk
+          file: ${{steps.sign_app.outputs.signedReleaseFile}}
